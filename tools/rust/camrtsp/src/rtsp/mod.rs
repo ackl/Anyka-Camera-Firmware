@@ -10,6 +10,16 @@
 //! framed) and RTP over UDP; H.264 (PT 96, FU-A + single NAL) and G.711 a-law
 //! (PT 8) when the source provides audio.
 
+// Protocol building blocks; the server that uses them follows.
+#[allow(dead_code)]
+mod msg;
+#[allow(dead_code)]
+mod rtp;
+#[allow(dead_code)]
+mod sdp;
+#[allow(dead_code)]
+mod transport;
+
 use crate::source::VideoSource;
 use std::io;
 use std::net::SocketAddr;
