@@ -24,6 +24,7 @@ timeout 10 ssh -o BatchMode=yes -o ConnectTimeout=8 build-01 true 2>/dev/null \
 # two agents building the same crate from different git worktrees at the same
 # time cannot overwrite each other's sources or artifacts.
 remote="src/anyka-build/$(printf '%s' "$root/tools/rust/$crate" | sha256sum | cut -c1-16)/$crate"
+ssh -o BatchMode=yes build-01 "mkdir -p ~/$remote"
 
 rsync -a --delete --exclude target \
     "$root/tools/rust/$crate/" "build-01:$remote/"
