@@ -14,6 +14,25 @@ Big pulls go through `work/pull-big.py REMOTE LOCAL SHA256` — `tools/get` buff
 RAM under a 30 s `cam` timeout and **dies at ~18–20 MB with a hash that looks like a
 clean EOF**.
 
+## Source control
+
+`~/lab/anyka` is a git repo: `git@git.basestar.tech:andrew/anyka.git`
+(private, Forgejo on basestar), branch `master`, first commit `df55179`
+2026-10-25. 120 files / 2 MB — notes, scripts and Rust sources, plus the
+`.jpg` evidence frames.
+
+Deliberately **not** in it (`.gitignore` has the reasons): `backups/` (the
+rollback set, ~64 MB, stays on firefly + elisa + the SD card),
+`analysis/rootfs/` and `analysis/base-rootfs/` (extracted stock filesystems
+that contain the camera's real `p2pPwd` and root password), the
+`Anyka-Camera-Firmware/` upstream clone at `823cb55`, the zig toolchain
+tarball, `tools/rust/*/target/`, compiled ARM binaries and `.mp4`/`.pcm`
+captures.
+
+So: a fresh clone gives you every note and every source file, but you still
+need the host's copies of `backups/` to restore the card or re-derive the
+patched binaries.
+
 ## Working now (verified on the board, survives reboot)
 
 | Capability | How | Evidence |
