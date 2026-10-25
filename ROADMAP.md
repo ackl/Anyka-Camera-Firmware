@@ -16,22 +16,32 @@ clean EOF**.
 
 ## Source control
 
-`~/lab/anyka` is a git repo: `git@git.basestar.tech:andrew/anyka.git`
-(private, Forgejo on basestar), branch `master`, first commit `df55179`
-2026-10-25. 120 files / 2 MB — notes, scripts and Rust sources, plus the
-`.jpg` evidence frames.
+`~/lab/anyka` is a **fork** of
+[MuhammedKalkan/Anyka-Camera-Firmware](https://github.com/MuhammedKalkan/Anyka-Camera-Firmware)
+(`main` @ `823cb55`, 293 files): upstream's history is in the repo, so `git diff`
+against upstream means something and a fix can go back as a patch. Our commits
+(notes, scripts, Rust) sit on top of it; branch `main`.
+
+| remote | where | role |
+|---|---|---|
+| `origin` | `git@git.basestar.tech:andrew/anyka.git` (private Forgejo) | where the work lives |
+| `github` | `git@github.com:ackl/Anyka-Camera-Firmware.git` | the GitHub fork of upstream |
+| `upstream` | `MuhammedKalkan/Anyka-Camera-Firmware` | fetch only (`no_push`) |
+
+`README.md` is ours (describes this whole repo); upstream's is preserved verbatim
+as `README.upstream.md`. Upstream updates: `git fetch upstream && git rebase
+upstream/main`.
 
 Deliberately **not** in it (`.gitignore` has the reasons): `backups/` (the
-rollback set, ~64 MB, stays on firefly + elisa + the SD card),
-`analysis/rootfs/` and `analysis/base-rootfs/` (extracted stock filesystems
-that contain the camera's real `p2pPwd` and root password), the
-`Anyka-Camera-Firmware/` upstream clone at `823cb55`, the zig toolchain
-tarball, `tools/rust/*/target/`, compiled ARM binaries and `.mp4`/`.pcm`
-captures.
+rollback set, ~64 MB, stays on firefly + elisa + the SD card), `analysis/rootfs/`
+and `analysis/base-rootfs/` (extracted stock filesystems that contain the
+camera's real `p2pPwd` and root password — `git grep --cached` verified absent
+from every commit), the zig toolchain tarball, `tools/rust/*/target/`, compiled
+ARM binaries and `.mp4`/`.pcm` captures.
 
-So: a fresh clone gives you every note and every source file, but you still
-need the host's copies of `backups/` to restore the card or re-derive the
-patched binaries.
+So: a fresh clone gives you every note, every source file *and* upstream's tree,
+but you still need the host's copies of `backups/` to restore the card or
+re-derive the patched binaries.
 
 ## Working now (verified on the board, survives reboot)
 

@@ -30,7 +30,24 @@ normal boot), 8080 httpd, 554 RTSP, 21 ftpd. 8782 `cmd_serverd` is loopback-only
 | `tools/` | host-side helpers (`cam`, `put`, `get`, `snap`, `rec`, `beep`, `irnight`, `camweb`) and their docs in `tools/README.md` |
 | `tools/rust/` | the Rust on-device tools (`motorctl`, `irctl`, `ispconf`, `led`) and the host panel `camweb` (own RTSP client, own telnet client) |
 | `work/` | scratch that turned out to matter: `irpatch.py`, `quiet-cue.sh`, `config.new.sh` (the deployed boot script), the CGI `webui.new`, recovery kit, capture scripts and evidence images |
+| `Factory/`, `rootfs/`, `src/` | upstream [MuhammedKalkan/Anyka-Camera-Firmware](https://github.com/MuhammedKalkan/Anyka-Camera-Firmware) at `823cb55` — the SD app this all builds on, untouched; everything above is ours on top of it |
 | `ROADMAP.md` | current state, rollback set, what is next, what is parked |
+
+### Remotes
+
+This repo is upstream **forked**, not vendored: its history is here, so `git diff`
+against upstream means something and a fix can be sent back as a patch.
+
+| remote | where | role |
+|---|---|---|
+| `origin` | `git@git.basestar.tech:andrew/anyka.git` | private Forgejo on basestar — where the work lives |
+| `github` | `git@github.com:ackl/Anyka-Camera-Firmware.git` | the GitHub fork of upstream |
+| `upstream` | `MuhammedKalkan/Anyka-Camera-Firmware` | fetch only, never push |
+
+`main` is upstream's `main` plus our commits. Taking upstream updates:
+`git fetch upstream && git rebase upstream/main` — our side only *adds* files, so
+the only repeated conflict is `README.md`, which is ours (upstream's is kept
+verbatim as `README.upstream.md`).
 
 ## Toolchain, the trap that eats afternoons
 
@@ -71,8 +88,6 @@ the build scripts pin the real toolchain under `~/.rustup/toolchains/`.
   and it lives on firefly, on elisa, and on the SD card itself.
 - `analysis/rootfs/`, `analysis/base-rootfs/` — extracted stock filesystems, which
   contain the camera's real `p2pPwd` and root password. Reproducible from `backups/`.
-- `Anyka-Camera-Firmware/` — public upstream
-  (MuhammedKalkan/Anyka-Camera-Firmware) at `823cb55`, cloned as the SD app source.
 - `tools/zig-macos-aarch64-0.13.0` — a downloaded toolchain tarball.
 - `tools/rust/*/target/`, compiled ARM binaries, and captured `.mp4`/`.pcm` media —
   build output and bulky evidence; the interesting frames are kept as `.jpg`.

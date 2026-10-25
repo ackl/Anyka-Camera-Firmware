@@ -113,13 +113,13 @@ The library does have a scene/mode switch:
 Doing this properly means calling `ak_vi_switch_mode` (or setting AWB/CCM/denoise
 for IR) **from inside the process that owns the VI/ISP** — i.e. from the
 streaming app, not from a separate tool. `rtsp` is a prebuilt binary; sources sit
-in `Anyka-Camera-Firmware/src/rtsp/` but rebuilding needs the uClibc/ARM toolchain
+in `src/rtsp/` but rebuilding needs the uClibc/ARM toolchain
 and the vendor libs' exact ABI. That is the next step if night vision matters
 beyond "I can see something".
 
 ## Correction (2026-10-24 ~23:55): the code is already there — three wrong names
 
-Re-read `Anyka-Camera-Firmware/src/rtsp/ak_rtsp_demo.c` now that live video works.
+Re-read `src/rtsp/ak_rtsp_demo.c` now that live video works.
 The day/night switching we were about to rebuild **already exists and is already
 started** by the running binary:
 

@@ -9,8 +9,8 @@
 /analysis/rootfs/
 /analysis/base-rootfs/
 
-# Public upstream clone: MuhammedKalkan/Anyka-Camera-Firmware @ 823cb55
-/Anyka-Camera-Firmware/
+# (Upstream MuhammedKalkan/Anyka-Camera-Firmware is not gitignored: this repo is a
+# fork of it, so its tree IS the repo. See README → Remotes.)
 
 # 353 MB downloaded toolchain tarball, not source
 /tools/zig-*

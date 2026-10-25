@@ -130,7 +130,7 @@ The subsequent service script mounts the card again. Therefore the custom applic
 
 ## Repository Factory script and dependencies
 
-`Anyka-Camera-Firmware/Factory/config.sh` contains:
+`Factory/config.sh` contains:
 
 | Lines | Action / implication |
 |---|---|
@@ -157,7 +157,7 @@ The initial archive failure due to a missing `gzip` applet is not sufficient to 
 
 ## The README's custom.sh hook is not the stock hook
 
-The README describes `/etc/jffs2/custom.sh` at `Anyka-Camera-Firmware/README.md:139–145`. The repository's **replacement** startup script actually calls it at `Anyka-Camera-Firmware/rootfs/etc/init.d/rc.local:35–36`, after starting Wi-Fi.
+The README describes `/etc/jffs2/custom.sh` at `README.upstream.md:139–145`. The repository's **replacement** startup script actually calls it at `rootfs/etc/init.d/rc.local:35–36`, after starting Wi-Fi.
 
 The extracted stock startup scripts instead use `/mnt/Factory/config.sh`. No literal `/etc/jffs2/custom.sh` reference was found in the extracted `usr` files or `etc/init.d` files. This is strong evidence not to rely on the README hook for the present stock installation, but not proof that no opaque/constructed binary path could ever refer to it.
 

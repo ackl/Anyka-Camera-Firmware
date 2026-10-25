@@ -1,6 +1,6 @@
 # PTZ / motor-control analysis
 
-Analysis date: 2026-10-15. Sources: locally extracted `analysis/rootfs`, `Anyka-Camera-Firmware/src/ptz`, and the repository's shipped `Factory/custom` ARM executables/libraries. This analysis only inspected files, ELF symbols and ARM disassembly; no ARM program was executed, no camera connection was made, and no motor/configuration command was sent.
+Analysis date: 2026-10-15. Sources: locally extracted `analysis/rootfs`, `src/ptz`, and the repository's shipped `Factory/custom` ARM executables/libraries. This analysis only inspected files, ELF symbols and ARM disassembly; no ARM program was executed, no camera connection was made, and no motor/configuration command was sent.
 
 ## Main conclusions
 
@@ -135,10 +135,10 @@ Static inspection used `file`, `strings`, `rg`, `arm-none-eabi-readelf` and `arm
 ```sh
 arm-none-eabi-readelf -sW analysis/rootfs/usr/bin/testptz
 arm-none-eabi-readelf -d analysis/rootfs/usr/bin/testptz
-arm-none-eabi-readelf -sW Anyka-Camera-Firmware/Factory/custom/lib/libplat_drv.so
-arm-none-eabi-objdump -d Anyka-Camera-Firmware/Factory/custom/ptz_daemon \
+arm-none-eabi-readelf -sW Factory/custom/lib/libplat_drv.so
+arm-none-eabi-objdump -d Factory/custom/ptz_daemon \
   | sed -n '/<main>:/,/^$/p'
-arm-none-eabi-objdump -d Anyka-Camera-Firmware/Factory/custom/lib/libplat_drv.so \
+arm-none-eabi-objdump -d Factory/custom/lib/libplat_drv.so \
   | sed -n '/<ak_drv_ptz_check_self>:/,/^$/p'
 ```
 

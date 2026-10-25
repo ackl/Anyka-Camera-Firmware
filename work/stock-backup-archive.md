@@ -107,7 +107,7 @@ small files.
 - `/mnt/Factory` **as it exists now** — `factory-sd-2026-10-24.tar` predates the
   day/night patches (`rtsp`, `lib/libplat_drv.so`) and the quiet boot chime, so
   the current tree is newer than any archive. (Reproducible from the host:
-  `Anyka-Camera-Firmware/src/rtsp/*` + `work/irpatch.py`, plus the cue files and
+  `src/rtsp/*` + `work/irpatch.py`, plus the cue files and
   `quiet-cue.sh` in `work/`.)
 - `/data` (mtd6, 77% full): stock prompts, `factory_is_not_ok`, wifi scripts —
   the `/data` rescue kit is a separate task.
