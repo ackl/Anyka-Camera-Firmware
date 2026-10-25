@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""Run shell commands on the Anyka camera over stock telnet (port 2323).
+
+Usage:  cam 'command string'   run one command
+        cam < script.sh        read a script from stdin and run it
+        cam -t 60 'cmd'        custom timeout (default 30s)
+
+Handles telnet IAC negotiation. Sends the command as a single write, then a
+printf marker carrying $? so the exit status comes back with the output.
+"""
+import socket, sys, time, os
+
+HOST = os.environ.get("CAM_HOST", "192.168.1.103")
+PORT = int(os.environ.get("CAM_PORT", "2323"))
+MARK = "__CAM_EOF__"
+
+
+def strip_iac(s, buf):
+    out = bytearray()
+    i = 0
+    while i < len(buf):
+        if buf[i] == 255 and i + 2 < len(buf):
+            if buf[i + 1] in (251, 252, 253, 254):
+                if buf[i + 1] in (251, 253):
+                    s.sendall(bytes([255, 254 if buf[i + 1] == 251 else 252, buf[i + 2]]))
+                i += 3
+                continue
+        out.append(buf[i])
+        i += 1
+    return out
+
+
+def recv_until(s, marker, timeout):
+    end = time.monotonic() + timeout
+    out = bytearray()
+    while time.monotonic() < end:
+        try:
+            b = s.recv(65536)
+        except socket.timeout:
+            continue
+        if not b:
+            break
+        out += strip_iac(s, b)
+        if marker in out:
+            break
+    return bytes(out)
+
+
+def main():
+    args = sys.argv[1:]
+    timeout = float(os.environ.get("CAM_TIMEOUT", "30"))
+    if args[:1] == ["-t"]:
+        timeout = float(args[1])
+        args = args[2:]
+    if not args:
+        sys.stderr.write(__doc__)
+        return 2
+    cmd = sys.stdin.read() if args == ["-"] else " ".join(args)
+
+    s = socket.create_connection((HOST, PORT), 5)
+    s.settimeout(0.3)
+    recv_until(s, b"#", 1.5)                        # drain banner + prompt
+    script = cmd.rstrip("\n") + '\nprintf "\\n%s%s %%s\\n" "%s" "%s" "$?"\n' % (
+        MARK[:6], MARK[6:], MARK[:6], MARK[6:])
+    s.sendall(script.encode())
+    data = recv_until(s, (MARK + " ").encode(), timeout)
+    s.close()
+
+    text = data.decode(errors="replace")
+    lines = text.splitlines()
+    first = cmd.splitlines()[0].strip() if cmd.strip() else ""
+    if lines and first and first[:40] in lines[0]:
+        lines = lines[1:]
+    rc = None
+    keep = []
+    for ln in lines:
+        if ln.startswith(MARK):
+            rc = ln[len(MARK):].strip()
+            continue
+        if ln.startswith("~ # ") or ln.startswith("/ # ") or ln.endswith(" # "):
+            continue
+        keep.append(ln)
+    txt = "\n".join(keep).strip("\n")
+    if txt:
+        sys.stdout.write(txt + "\n")
+    sys.stdout.write("[rc=%s]\n" % (rc if rc is not None else "timeout"))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

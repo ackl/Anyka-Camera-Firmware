@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# Excluded on purpose: nothing here is needed to read the notes or rebuild the
+# tools, and everything is reproducible from backups/ or the public upstream.
+# ---------------------------------------------------------------------------
+
+# Live device credentials live in the dumped stock /etc/jffs2 configs
+# (p2pPwd, root password). Reproducible from backups/stock-*.tar.
+# Never commit these.
+/analysis/rootfs/
+/analysis/base-rootfs/
+
+# Public upstream clone: MuhammedKalkan/Anyka-Camera-Firmware @ 823cb55
+/Anyka-Camera-Firmware/
+
+# 353 MB downloaded toolchain tarball, not source
+/tools/zig-*
+
+# Build output
+/tools/rust/*/target/
+
+# Firmware images and SD-card tars (the rollback path, ~64 MB). Kept on
+# firefly, on elisa, and on the SD card itself. See README.
+/backups/
+/analysis/motor-research/kernel.elf
+/analysis/motor-research/kernel.raw
+
+# Compiled ARM binaries whose source is in the tree
+/tools/motorctl
+/tools/rust/*/target/
+/work/irpatch-libplat_drv.so
+/work/irpatch-libplat_drv.so.orig
+/work/irpatch-rtsp
+/work/irpatch-rtsp.orig
+/work/onvif.bin
+
+# Captured and generated media: evidence kept locally, bulky, regenerable
+*.mp4
+*.mkv
+*.pcm
+*.aac
+*.g711a
+/work/video/libplat_vi.so
+
+# Editor / OS noise
+.DS_Store
+__pycache__/
+*.pyc

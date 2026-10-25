@@ -1,0 +1,27 @@
+#!/bin/sh
+# rec SECONDS [OUT.mp4] [CHANNEL] -- record a clip, video only, no re-encode.
+#
+#   tools/rec 30                 -> work/video/captures/rec-HHMMSS.mp4, /vs0
+#   tools/rec 10 /tmp/x.mp4 vs1  -> sub channel
+#
+# Video-only on purpose: the streams carry 8 kHz PCM a-law as a second track and
+# mp4 will not hold it ("Could not find tag for codec pcm_alaw"), which is how
+# the first recording attempts produced 0-byte files. Use -map 0:v and copy the
+# bitstream; add `-map 0:a -c:a copy` with a .mkv suffix if you want the sound.
+set -eu
+cd "$(dirname "$0")/.."
+
+[ $# -ge 1 ] || { echo "usage: rec SECONDS [OUT.mp4] [CHANNEL]" >&2; exit 2; }
+SECS=$1
+OUT=${2:-work/video/captures/rec-$(date +%H%M%S).mp4}
+CH=${3:-vs0}
+mkdir -p "$(dirname "$OUT")"
+
+ffmpeg -v error -rtsp_transport tcp -i "rtsp://192.168.1.103:554/$CH" \
+    -t "$SECS" -map 0:v -c copy -y "$OUT"
+
+ffprobe -v error -count_frames -select_streams v:0 \
+    -show_entries stream=nb_read_frames,width,height \
+    -show_entries format=duration,bit_rate \
+    -of default=nw=1 "$OUT"
+printf '%s %s\n' "$OUT" "$(ls -lh "$OUT" | awk '{print $5}')"

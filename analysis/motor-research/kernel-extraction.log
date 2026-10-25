@@ -1,0 +1,36 @@
+[+] Version string: Linux version 3.4.35 (ljy@ants-szfir) (gcc version 4.8.5 (anyka (gcc-4.8.5 + binutils-2.24 + ulcibc-0.9.33.2)(20170223)) ) #1 Fri Apr 12 17:59:39 CST 2024
+[+]   Other related strings containing the version number: [b'Linux version 3.4.35 (ljy@ants-szfir) (gcc version 4.8.5 (anyka (gcc-4.8.5 + binutils-2.24 + ulcibc-0.9.33.2)(20170223)) ) #1 Fri Apr 12 17:59:39 CST 2024', b'3.4.35 mod_unload ARMv5 ', b'3.4.35', b'3.4.35']
+[+] Guessed architecture: armle successfully in 0.07 seconds
+[+] Kernel found in database
+[+]   Read kernel source: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/?id=v3.4
+[+]   Download kernel: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/snapshot/v3.4.tar.gz
+[+]   Kernel release date: 2012-05-20
+[+]   Interesting files:
+[~]     - kernel/kallsyms.c: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/kernel/kallsyms.c?id=v3.4
+[~]     - scripts/kallsyms.c: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/scripts/kallsyms.c?id=v3.4
+[~]     - include/linux/elf-em.h: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/elf-em.h?id=v3.4
+[~]     - include/linux/elf.h: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/elf.h?id=v3.4
+[~]     - Documentation/Changes: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/Changes?id=v3.4
+[+]   Architecture arm (EM_ARM) supports 32-bit, big-endian, little-endian
+[~]     - Documentation/arm/Booting: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/arm/Booting?id=v3.4
+[~]     - arch/arm/boot/compressed/vmlinux.lds.in: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/compressed/vmlinux.lds.in?id=v3.4
+[~]     - arch/arm/boot/compressed/head.S: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/compressed/head.S?id=v3.4
+[~]     - arch/arm/boot/compressed/Makefile: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/compressed/Makefile?id=v3.4
+[~]     - arch/arm/kernel/vmlinux.lds.S: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/kernel/vmlinux.lds.S?id=v3.4
+[~]     - arch/arm/kernel/head.S: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/kernel/head.S?id=v3.4
+[~]     - arch/arm/kernel/Makefile: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/kernel/Makefile?id=v3.4
+[~]     - arch/arm/boot/Makefile: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/Makefile?id=v3.4
+[~]     - arch/arm/include/asm/elf.h: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/include/asm/elf.h?id=v3.4
+[+]   Architecture arm26 (EM_ARM) supports 32-bit, little-endian
+[+]   Architecture arm64 (EM_ARM) supports 64-bit, big-endian, little-endian
+[+]   Suggested build environment: docker run -it debian/eol:squeeze (Debian 6.0 "Squeeze" released 2011-02-06)
+[+] Found kallsyms_token_table at file offset 0x00372060
+[+] Found kallsyms_token_index at file offset 0x003723e0
+[+] Found kallsyms_markers at file offset 0x00371ec0
+[+] Found kallsyms_names at file offset 0x0032b670 (25808 symbols)
+[+] Found kallsyms_num_syms at file offset 0x0032b660
+[+] Null addresses overall: 0 %
+[+] Found kallsyms_addresses at file offset 0x00312320
+[+] Guessed the base address using the first_symbol_virtual_address fallback heuristic (c0008000)
+[+] Reconstructing ELF with guessed base address (c0008000)
+[+] Successfully wrote the new ELF kernel to analysis/motor-research/kernel.elf

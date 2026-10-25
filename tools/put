@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""put LOCAL REMOTE -- push a file to the camera, retrying until it verifies.
+
+`tools/push` sends one TCP stream to a listener the caller started by hand,
+which is fiddly: the listener takes a second or two to come up, the telnet
+runner at :2323 is flaky, and probing the port to see whether it is ready
+*consumes* the connection and writes a stray byte into the target file.
+
+This wrapper does the dance: for each attempt it starts a fresh
+`nc -l -p PORT > REMOTE.tmp` through tools/cam, waits without touching the
+port, streams the file, then makes the board chmod and rename it into place and
+compares sha256. It stops at the first verify that matches.
+
+usage: tools/put LOCAL REMOTE [--mode 0755]
+
+env: CAM_HOST (default 192.168.1.103), PUT_PORT (default 9996). Use a port that
+no other push is using: the audio/IR/whatever agents share this board.
+"""
+
+import hashlib
+import os
+import subprocess
+import sys
+import time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+CAM = os.path.join(HERE, "cam")
+PUSH = os.path.join(HERE, "push")
+HOST = os.environ.get("CAM_HOST", "192.168.1.103")
+PORT = os.environ.get("PUT_PORT", "9996")
+ATTEMPTS = 6
+
+
+def cam(cmd, timeout=45):
+    """Run a command on the board, returning its output (never raises)."""
+    try:
+        r = subprocess.run(["timeout", str(timeout), CAM, cmd],
+                           capture_output=True, text=True, timeout=timeout + 10)
+        return (r.stdout or "") + (r.stderr or "")
+    except subprocess.TimeoutExpired:
+        return ""
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if len(args) < 2:
+        print(__doc__.strip().splitlines()[0], file=sys.stderr)
+        return 2
+    local, remote = args[0], args[1]
+    mode = "0755"
+    for i, a in enumerate(sys.argv):
+        if a == "--mode" and i + 1 < len(sys.argv):
+            mode = sys.argv[i + 1]
+
+    data = open(local, "rb").read()
+    want = hashlib.sha256(data).hexdigest()
+    tmp = remote + ".part"
+    print(f"{local}: {len(data)} bytes sha256 {want}")
+
+    for attempt in range(1, ATTEMPTS + 1):
+        # Fresh listener each time; the old one may have died with the telnet
+        # session that started it.
+        cam(f"rm -f {tmp}; (nc -l -p {PORT} > {tmp} && chmod {mode} {tmp} "
+            f"&& mv {tmp} {remote}) &", timeout=20)
+        time.sleep(3)
+        try:
+            r = subprocess.run([PUSH, local, remote], capture_output=True,
+                               text=True, timeout=30,
+                               env={**os.environ, "PUSH_PORT": PORT})
+        except subprocess.TimeoutExpired:
+            print(f"  attempt {attempt}: stream timed out")
+            continue
+        if r.returncode != 0:
+            # Connection refused == listener not up yet; retry.
+            continue
+        time.sleep(1)
+        # The listener-side mv happens right after the stream closes; give the
+        # board a moment, then verify what actually landed on the card.
+        for _ in range(3):
+            out = cam(f"sha256sum {remote} 2>/dev/null")
+            if want in out:
+                print(f"verified on board: {remote} ({attempt} attempt(s))")
+                return 0
+            time.sleep(1)
+        print(f"  attempt {attempt}: checksum mismatch, retrying")
+
+    print(f"FAILED to deliver {local} to {remote}", file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

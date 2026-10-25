@@ -1,0 +1,48 @@
+#!/bin/sh
+# quiet-cue.sh FILE [RATE] [CHANNELS] -- play a PCM file with the amp actually on.
+#
+# Why this exists: the AK3918 audio driver raises SPK_PA to 1 for the duration of
+# a playback (IOC_SET_SPEAKER value=1, "enable speaker").  The amp on this board
+# is ACTIVE-LOW -- 0 = amp on, 1 = muted -- so the driver mutes the speaker
+# exactly while it is trying to play.  Every plain `ak_adec_demo` run is silent.
+#
+# So: hold SPK_PA at 0 for the whole playback (a keeper loop re-asserts it every
+# 50 ms because the driver flips it), then restore 1 (muted) afterwards.
+# Verified by ear on 2026-10-24: 2 LED blinks (pin held low) is the only audible
+# phase of the beep-train test; plain plays made no sound the user could hear.
+#
+# Levels are baked into the file, not passed here: the decoder hardcodes
+# DAC 6 / DEV 5 / ASLC 6 and accepts no volume argument.  See gen-cues.py.
+
+SPK=/sys/user-gpio/SPK_PA
+LED=/mnt/Factory/custom/led
+F="$1"
+RATE=${2:-16000}
+CH=${3:-1}
+
+[ -n "$F" ] || { echo "usage: quiet-cue.sh FILE [RATE] [CHANNELS]"; exit 2; }
+[ -f "$F" ] || { echo "quiet-cue: no such file: $F"; exit 2; }
+
+rm -f /tmp/spkstop
+# keeper: pin low for the whole play, capped at 10 s so it can never leak
+( i=0
+  while [ $i -lt 200 ] && [ ! -f /tmp/spkstop ]; do
+      echo 0 > $SPK 2>/dev/null
+      i=$((i+1))
+      sleep 0.05
+  done ) &
+KEEPER=$!
+sleep 0.15   # let the keeper win the race before the driver asserts anything
+
+[ -x "$LED" ] && $LED on >/dev/null 2>&1
+LD_LIBRARY_PATH=/mnt/Factory/custom/lib ak_adec_demo $RATE $CH pcm "$F" >/dev/null 2>&1
+rc=$?
+[ -x "$LED" ] && $LED off >/dev/null 2>&1
+
+touch /tmp/spkstop
+sleep 0.15
+kill $KEEPER 2>/dev/null
+wait 2>/dev/null
+echo 1 > $SPK 2>/dev/null      # back to muted while idle
+echo "quiet-cue $(basename "$F") rc=$rc spk=$(cat $SPK) $(date +%T)"
+exit $rc

@@ -1,0 +1,236 @@
+#!/bin/sh
+# webui -- camera control panel, with a speaker test section (2026-10-25).
+#
+# Served by:  /mnt/Factory/custom/busybox httpd -p 8080 \
+#                 -h /mnt/Factory/custom/web_interface/www
+# Deployed at www/cgi-bin/webui.  Stock original kept there as webui.stock.
+#
+# Query string, first parameter only:
+#   (none) / command=stat   render the panel
+#   command=spk:NAME        play audio/NAME.pcm through quiet-cue.sh (amp ON)
+#   command=raw:NAME        play it the stock way -- driver mutes the amp, so
+#                           this is the "expected silent" diagnostic
+#   command=stop            stop playback, re-mute the amp
+#   command=led:on|off      WHITE_LED
+#
+# Why quiet-cue.sh and not ak_adec_demo: the AK3918 driver raises SPK_PA to 1
+# (IOC_SET_SPEAKER value=1) for the whole playback and this amp is ACTIVE-LOW,
+# so a bare decoder run is muted while it plays.  quiet-cue.sh holds the pin at
+# 0 for the duration and restores it afterwards.  See analysis/audio.md.
+#
+# NAME is whitelisted by a case list -- a path is NEVER built from raw input.
+#
+# Plays are backgrounded: the decoder needs 1-3 s to open the device, and httpd
+# would time the CGI out.  The result line lands in /tmp/web-spk.log; press
+# Refresh status to read it.
+
+AUD=/mnt/Factory/custom/audio
+QC=/mnt/Factory/custom/quiet-cue.sh
+SPK=/sys/user-gpio/SPK_PA
+LOG=/tmp/web-spk.log
+PIDF=/tmp/web-spk.pid
+
+# ---- parse ---------------------------------------------------------------
+Q="${QUERY_STRING%%&*}"
+case "$Q" in
+    command=*) CMD="${Q#command=}" ;;
+    *)         CMD="" ;;
+esac
+CMD=$(printf '%s' "$CMD" | tr -d ' \r\n')
+ACT="${CMD%%:*}"
+ARG=""
+[ "$CMD" != "$ACT" ] && ARG="${CMD#*:}"
+
+# ---- whitelist -----------------------------------------------------------
+# Only these names may be played.  Empty FILE == nothing to play.
+FILE=""
+case "$ARG" in
+    wt-40|wt-30|wt-20|wt-10|wt-long|cue|warn|alarm|boot40|boot32|boot40b|\
+    chime|click40|click30|click20|beep)
+        FILE="$AUD/$ARG.pcm" ;;
+esac
+
+# Liveness comes from ps, not from a stored pid: pids recycle fast on this
+# board and a stale pid file made Stop think a finished play was still running.
+is_playing() {
+    ps | grep -q '[q]uiet-cue.sh' && return 0
+    ps | grep -q '[a]k_adec_demo' && return 0
+    return 1
+}
+stop_play() {
+    for P in $(ps | grep '[q]uiet-cue.sh' | awk '{print $1}'); do
+        kill "$P" 2>/dev/null      # quiet-cue traps TERM and re-mutes the amp
+    done
+    for P in $(ps | grep '[a]k_adec_demo' | awk '{print $1}'); do
+        kill "$P" 2>/dev/null
+    done
+}
+
+MSG=""
+case "$ACT" in
+    spk|raw)
+        if [ -z "$FILE" ]; then
+            MSG="Refused: unknown sound '$ARG'."
+        elif [ ! -f "$FILE" ]; then
+            MSG="Missing file: $FILE"
+        elif is_playing; then
+            MSG="Refused: something is already playing (press Stop first)."
+        elif [ "$ACT" = "raw" ]; then
+            # NB: the driver's teardown leaves SPK_PA at 0 (= amp ON), so
+            # re-mute explicitly.  Observed 2026-10-25 00:04:48: a raw play
+            # logged spk=0 and the pin stayed low afterwards.
+            ( LD_LIBRARY_PATH=/mnt/Factory/custom/lib \
+                 ak_adec_demo 16000 1 pcm "$FILE" >/dev/null 2>&1
+              echo 1 > "$SPK" 2>/dev/null
+              echo "raw $(basename "$FILE") rc=$? spk=$(cat $SPK) $(date +%T)" >> "$LOG" ) &
+            echo $! > "$PIDF"
+            MSG="Playing $ARG the stock way (no amp hold) -- expected silent."
+        else
+            ( "$QC" "$FILE" >> "$LOG" 2>&1 ) &
+            echo $! > "$PIDF"
+            MSG="Playing $ARG. Decoder starts in 1-3 s; amp held on meanwhile."
+        fi
+        ;;
+    stop)
+        if is_playing; then
+            stop_play
+            sleep 1
+            MSG="Stopped."
+        else
+            MSG="Nothing was playing."
+        fi
+        touch /tmp/spkstop 2>/dev/null
+        echo 1 > "$SPK" 2>/dev/null
+        ;;
+    led)
+        case "$ARG" in
+            on)  echo 1 > /sys/user-gpio/WHITE_LED; MSG="White LED on." ;;
+            off) echo 0 > /sys/user-gpio/WHITE_LED; MSG="White LED off." ;;
+            *)   MSG="Unknown LED state '$ARG'." ;;
+        esac
+        ;;
+esac
+
+# ---- status --------------------------------------------------------------
+pin() { cat /sys/user-gpio/"$1" 2>/dev/null; }
+SPKV=$(pin SPK_PA)
+IRV=$(pin IR_LED)
+WLV=$(pin WHITE_LED)
+ICA=$(pin ircut_a)
+ICB=$(pin ircut_b)
+PHOTO=$(tr -d '\n' < /tmp/photo 2>/dev/null)
+[ -z "$PHOTO" ] && PHOTO="(absent = night)"
+TICKS=$(cat /tmp/spk.ticks 2>/dev/null)
+RTSPS=$(ps | grep -c '[r]tsp')
+if is_playing; then
+    STATE="playing"
+elif [ "$SPKV" = "0" ]; then
+    STATE="idle &mdash; <span style=\"color:#e0b050\">amp left enabled, press Stop to mute</span>"
+else
+    STATE="idle"
+fi
+LASTLOG=$(tail -n 6 "$LOG" 2>/dev/null | tail -n 6)
+[ -z "$LASTLOG" ] && LASTLOG="(no plays yet this boot)"
+DATE=$(date)
+UPT=$(uptime)
+IPADD=$(ip route get 1 2>/dev/null | awk '{print $NF;exit}')
+
+# ---- render --------------------------------------------------------------
+cat <<EOT
+Content-type: text/html
+Cache-Control: no-store
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Camera - WebUI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: Arial, Verdana, sans-serif; margin: 0; padding: 1em;
+       background: #101418; color: #e8e8e8; }
+h1 { font-size: 1.3em; margin: 0 0 0.2em 0; }
+h2 { font-size: 1.05em; margin: 1.4em 0 0.5em 0; color: #9fd0ff;
+     border-bottom: 1px solid #2a3440; padding-bottom: 0.25em; }
+.sub { color: #8a97a5; font-size: 0.85em; margin-bottom: 0.8em; }
+button { font-size: 1em; padding: 0.7em 1em; margin: 0.25em;
+         border: 1px solid #3a4855; border-radius: 6px;
+         background: #1d2731; color: #e8e8e8; min-width: 8em; }
+button:active { background: #2b3a48; }
+button.stop { border-color: #7a3030; background: #3a1d1d; }
+button.diag { font-size: 0.85em; background: #161d24; color: #9aa7b4; }
+.msg { margin: 1em 0; padding: 0.6em 0.8em; border-radius: 6px;
+       background: #16324a; border: 1px solid #2d5a80; }
+.msg:empty { display: none; }
+table { border-collapse: collapse; font-size: 0.9em; }
+td { padding: 0.15em 0.8em 0.15em 0; }
+td.k { color: #8a97a5; }
+pre { background: #0b0f13; border: 1px solid #232c35; border-radius: 6px;
+      padding: 0.6em; font-size: 0.78em; overflow-x: auto; color: #b8c4d0; }
+.foot { color: #6d7a87; font-size: 0.78em; margin-top: 1.6em; }
+</style>
+</head>
+<body>
+
+<h1>Camera</h1>
+<div class="sub">Speaker test panel &mdash; levels are baked into the files;
+the decoder has no volume control. The amp is enabled only while a play runs.</div>
+
+<div class="msg">$MSG</div>
+
+<h2>Level ladder &mdash; 3 clicks each</h2>
+<button onclick="location.href='webui?command=spk:wt-40'">&minus;40 dBFS</button>
+<button onclick="location.href='webui?command=spk:wt-30'">&minus;30 dBFS</button>
+<button onclick="location.href='webui?command=spk:wt-20'">&minus;20 dBFS</button>
+<button onclick="location.href='webui?command=spk:wt-10'">&minus;10 dBFS</button>
+<br />
+<button onclick="location.href='webui?command=spk:wt-long'">Long tone 3 s (&minus;20)</button>
+
+<h2>Notification cues</h2>
+<button onclick="location.href='webui?command=spk:cue'">Cue (&minus;40)</button>
+<button onclick="location.href='webui?command=spk:warn'">Warn (&minus;30)</button>
+<button onclick="location.href='webui?command=spk:alarm'">Alarm (&minus;20)</button>
+
+<h2>Boot chime</h2>
+<button onclick="location.href='webui?command=spk:boot40'">boot40 (what config.sh plays)</button>
+<button onclick="location.href='webui?command=spk:boot32'">boot32 (&minus;32, louder)</button>
+
+<h2>Control</h2>
+<button class="stop" onclick="location.href='webui?command=stop'">Stop / mute amp</button>
+<button onclick="location.href='webui?command=stat'">Refresh status</button>
+
+<h2>Status</h2>
+<table>
+<tr><td class="k">Playback</td><td>$STATE</td></tr>
+<tr><td class="k">Amp pin SPK_PA</td><td>$SPKV &nbsp;<span style="color:#8a97a5">(0 = amp on, 1 = muted)</span></td></tr>
+<tr><td class="k">Keeper ticks</td><td>$TICKS / 20 per second</td></tr>
+<tr><td class="k">rtsp</td><td>$RTSPS process(es)</td></tr>
+<tr><td class="k">Photo sensor</td><td>$PHOTO</td></tr>
+<tr><td class="k">IR_LED / WHITE_LED</td><td>$IRV / $WLV</td></tr>
+<tr><td class="k">IR-cut a / b</td><td>$ICA / $ICB</td></tr>
+<tr><td class="k">Uptime</td><td>$UPT</td></tr>
+<tr><td class="k">Date</td><td>$DATE</td></tr>
+<tr><td class="k">IP</td><td>$IPADD</td></tr>
+</table>
+
+<h2>Last plays</h2>
+<pre>$LASTLOG</pre>
+
+<h2>Diagnostics</h2>
+<button class="diag" onclick="location.href='webui?command=raw:wt-20'">wt-20 via stock decoder (expected silent)</button>
+<button class="diag" onclick="location.href='webui?command=led:on'">White LED on</button>
+<button class="diag" onclick="location.href='webui?command=led:off'">White LED off</button>
+<div class="sub" style="margin-top:0.6em">
+If the stock-decoder button is silent and the &minus;20 button is audible, the
+amp hold is what is doing the work. If <em>both</em> are silent, the fault is at
+or after the amp (wiring, the speaker itself), not in software.
+</div>
+
+<div class="foot">
+PTZ buttons from the stock page were removed: they wrote directions to
+/tmp/ptz.daemon, whose daemon is disabled, so they never moved anything.
+Motor control stays on the command line (motorctl).
+</div>
+
+</body>
+</html>
+EOT

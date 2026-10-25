@@ -1,0 +1,89 @@
+
+analysis/motor-research/kernel.elf:     file format elf32-littlearm
+
+
+Disassembly of section .kernel:
+
+c0013c90 <ak39_timer_start>:
+c0013c90:	e1a0c00d 	mov	ip, sp
+c0013c94:	e92dd9f8 	push	{r3, r4, r5, r6, r7, r8, fp, ip, lr, pc}
+c0013c98:	e24cb004 	sub	fp, ip, #4
+c0013c9c:	e1a05000 	mov	r5, r0
+c0013ca0:	e1a06001 	mov	r6, r1
+c0013ca4:	e59f0090 	ldr	r0, [pc, #144]	@ c0013d3c <ak39_timer_start+0xac>
+c0013ca8:	e1a01003 	mov	r1, r3
+c0013cac:	e1a04002 	mov	r4, r2
+c0013cb0:	eb04a458 	bl	c013ce18 <__aeabi_idiv>
+c0013cb4:	e3550000 	cmp	r5, #0
+c0013cb8:	e2408001 	sub	r8, r0, #1
+c0013cbc:	e5940008 	ldr	r0, [r4, #8]
+c0013cc0:	1a000004 	bne	c0013cd8 <ak39_timer_start+0x48>
+c0013cc4:	e59f1074 	ldr	r1, [pc, #116]	@ c0013d40 <ak39_timer_start+0xb0>
+c0013cc8:	e59f0074 	ldr	r0, [pc, #116]	@ c0013d44 <ak39_timer_start+0xb4>
+c0013ccc:	eb0b8d59 	bl	c02f7238 <printk>
+c0013cd0:	e3e00015 	mvn	r0, #21
+c0013cd4:	e89da9f8 	ldm	sp, {r3, r4, r5, r6, r7, r8, fp, sp, pc}
+c0013cd8:	e3500000 	cmp	r0, #0
+c0013cdc:	e280101f 	add	r1, r0, #31
+c0013ce0:	e59f2060 	ldr	r2, [pc, #96]	@ c0013d48 <ak39_timer_start+0xb8>
+c0013ce4:	a1a01000 	movge	r1, r0
+c0013ce8:	e1a012c1 	asr	r1, r1, #5
+c0013cec:	e792c101 	ldr	ip, [r2, r1, lsl #2]
+c0013cf0:	e200101f 	and	r1, r0, #31
+c0013cf4:	e1a0c13c 	lsr	ip, ip, r1
+c0013cf8:	e21c7001 	ands	r7, ip, #1
+c0013cfc:	0a000003 	beq	c0013d10 <ak39_timer_start+0x80>
+c0013d00:	e59f0044 	ldr	r0, [pc, #68]	@ c0013d4c <ak39_timer_start+0xbc>
+c0013d04:	eb0b8d4b 	bl	c02f7238 <printk>
+c0013d08:	e3e0000f 	mvn	r0, #15
+c0013d0c:	e89da9f8 	ldm	sp, {r3, r4, r5, r6, r7, r8, fp, sp, pc}
+c0013d10:	e1a01002 	mov	r1, r2
+c0013d14:	eb04a6d9 	bl	c013d880 <_set_bit>
+c0013d18:	e5943000 	ldr	r3, [r4]
+c0013d1c:	e5845010 	str	r5, [r4, #16]
+c0013d20:	e5846014 	str	r6, [r4, #20]
+c0013d24:	e5838000 	str	r8, [r3]
+c0013d28:	e5943004 	ldr	r3, [r4, #4]
+c0013d2c:	e3a02203 	mov	r2, #805306368	@ 0x30000000
+c0013d30:	e5832000 	str	r2, [r3]
+c0013d34:	e1a00007 	mov	r0, r7
+c0013d38:	e89da9f8 	ldm	sp, {r3, r4, r5, r6, r7, r8, fp, sp, pc}
+c0013d3c:	00b71b00 	adcseq	r1, r7, r0, lsl #22
+c0013d40:	c02fd54d 	eorgt	sp, pc, sp, asr #10
+c0013d44:	c037d750 	eorsgt	sp, r7, r0, asr r7
+c0013d48:	c04105e4 	subgt	r0, r1, r4, ror #11
+c0013d4c:	c037d763 	eorsgt	sp, r7, r3, ror #14
+
+c0013d50 <ak39_timer_stop>:
+c0013d50:	e1a0c00d 	mov	ip, sp
+c0013d54:	e92dd800 	push	{fp, ip, lr, pc}
+c0013d58:	e24cb004 	sub	fp, ip, #4
+c0013d5c:	e5903004 	ldr	r3, [r0, #4]
+c0013d60:	e3e02201 	mvn	r2, #268435456	@ 0x10000000
+c0013d64:	e5832000 	str	r2, [r3]
+c0013d68:	e5900008 	ldr	r0, [r0, #8]
+c0013d6c:	e59f1008 	ldr	r1, [pc, #8]	@ c0013d7c <ak39_timer_stop+0x2c>
+c0013d70:	eb049d3a 	bl	c013b260 <_clear_bit>
+c0013d74:	e3a00000 	mov	r0, #0
+c0013d78:	e89da800 	ldm	sp, {fp, sp, pc}
+c0013d7c:	c04105e4 	subgt	r0, r1, r4, ror #11
+
+c0013d80 <ak39_timer_remove>:
+c0013d80:	e1a0c00d 	mov	ip, sp
+c0013d84:	e92dd818 	push	{r3, r4, fp, ip, lr, pc}
+c0013d88:	e24cb004 	sub	fp, ip, #4
+c0013d8c:	e1a04000 	mov	r4, r0
+c0013d90:	ebffffee 	bl	c0013d50 <ak39_timer_stop>
+c0013d94:	e594000c 	ldr	r0, [r4, #12]
+c0013d98:	e1a01004 	mov	r1, r4
+c0013d9c:	eb00df4b 	bl	c004bad0 <free_irq>
+c0013da0:	e1a00004 	mov	r0, r4
+c0013da4:	eb01745f 	bl	c0070f28 <kfree>
+c0013da8:	e3a00000 	mov	r0, #0
+c0013dac:	e89da818 	ldm	sp, {r3, r4, fp, sp, pc}
+
+c0013db0 <ak39_timer_interrupt>:
+c0013db0:	e1a0c00d 	mov	ip, sp
+c0013db4:	e92dd818 	push	{r3, r4, fp, ip, lr, pc}
+c0013db8:	e24cb004 	sub	fp, ip, #4
+c0013dbc:	e5913004 	ldr	r3, [r1, #4]

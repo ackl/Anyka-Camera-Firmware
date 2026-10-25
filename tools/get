@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""get REMOTE LOCAL -- pull a file off the camera, retrying until it verifies.
+
+The mirror of `tools/put`. The board has no rsync and the FTP server wants
+credentials, so the only channel is `nc` on the board plus a raw TCP socket from
+here. Two traps, both of which wrote wrong bytes into files before this script
+existed:
+
+  * the listener takes a second or two to appear, and probing the port to check
+    readiness *consumes* the connection;
+  * the telnet runner at :2323 is flaky, so a listener sometimes never starts.
+
+So: start the listener, sleep, stream, compare sha256 with the board's own
+`sha256sum`, retry the whole thing if it does not match.
+
+usage: tools/get REMOTE LOCAL
+
+env: CAM_HOST (default 192.168.1.103), GET_PORT (default 9995). Use a port that
+no other pull on this board is using.
+"""
+
+import hashlib
+import os
+import re
+import subprocess
+import sys
+import time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+CAM = os.path.join(HERE, "cam")
+HOST = os.environ.get("CAM_HOST", "192.168.1.103")
+PORT = os.environ.get("GET_PORT", "9995")
+ATTEMPTS = 6
+
+
+def cam(cmd, timeout=45):
+    try:
+        r = subprocess.run(["timeout", str(timeout), CAM, cmd],
+                           capture_output=True, text=True, timeout=timeout + 10)
+        return (r.stdout or "") + (r.stderr or "")
+    except subprocess.TimeoutExpired:
+        return ""
+
+
+def remote_sha(remote):
+    out = cam(f"sha256sum {remote} 2>/dev/null")
+    m = re.search(r"([0-9a-f]{64})", out)
+    return m.group(1) if m else None
+
+
+def main():
+    if len(sys.argv) < 3:
+        print(__doc__.strip().splitlines()[0], file=sys.stderr)
+        return 2
+    remote, local = sys.argv[1], sys.argv[2]
+
+    want = remote_sha(remote)
+    if not want:
+        print(f"no such file on board: {remote}", file=sys.stderr)
+        return 1
+    print(f"{remote}: sha256 {want}")
+
+    for attempt in range(1, ATTEMPTS + 1):
+        # The listener blocks the remote shell until a client connects, so the
+        # cam session must run *alongside* the fetch, not before it.
+        listener = subprocess.Popen(
+            [CAM, f"nc -l -p {PORT} < {remote}"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            start_new_session=True)
+        time.sleep(3)
+        blob = b""
+        try:
+            r = subprocess.run(
+                ["bash", "-c", f"cat < /dev/tcp/{HOST}/{PORT}"],
+                capture_output=True, timeout=40)
+            blob = r.stdout
+        except subprocess.TimeoutExpired:
+            blob = b""
+        finally:
+            listener.terminate()
+            try:
+                listener.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                listener.kill()
+        got = hashlib.sha256(blob).hexdigest() if blob else None
+        if got == want:
+            with open(local, "wb") as f:
+                f.write(blob)
+            print(f"verified: {local} ({len(blob)} bytes, {attempt} attempt(s))")
+            return 0
+        print(f"  attempt {attempt}: got {len(blob)} bytes, "
+              f"sha256 {got or 'nothing'} — retrying")
+
+    print(f"FAILED to retrieve {remote}", file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

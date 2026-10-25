@@ -1,0 +1,40 @@
+#!/bin/sh
+# tools/irnight [day|night|status] [HOST] -- flip the camera's real day/night mode.
+#
+# Unlike tools/rust/irctl (which drives the ircut GPIOs by hand, leaving the ISP
+# on its day profile and the IR picture violet), this rides the stock rtsp
+# application's own photosensitive thread: it writes the value the patched
+# libplat_drv.so now reads instead of the missing photo-sensor node, and the
+# rtsp process switches ircut + IR LED + ISP scene within 5 s, in-process.
+#
+#   night  -> /tmp/photo=1 : IR illuminator on, ircut out, ISP night profile
+#   day    -> /tmp/photo=0 : IR off, ircut in, ISP day profile
+#   status -> what is set, what the pins say, what rtsp last did
+#
+# Volatile on purpose: /tmp/photo does not survive a reboot, so the board always
+# comes up in day mode. For a night-default boot, add to /mnt/Factory/config.sh:
+#     echo 1 > /tmp/photo
+# (before the 30 s sleep; rtsp reads it ~5 s after it starts).
+#
+# HOST: default 192.168.1.103, overridable with $CAM_HOST.
+set -e
+MODE=${1:-status}
+case "$MODE" in
+    status) ;;
+    day|night) SHIFT=1; shift; if [ -n "$1" ]; then export CAM_HOST="$1"; fi ;;
+    *) MODE=status ;;   # not a mode word -> treat it as a host
+esac
+case "$MODE" in
+    day)   VAL=0 ;;
+    night) VAL=1 ;;
+    *)     VAL="" ;;
+esac
+
+READ='printf "IR_LED=%s ircut_a=%s ircut_b=%s\n" $(cat /sys/user-gpio/IR_LED) $(cat /sys/user-gpio/ircut_a) $(cat /sys/user-gpio/ircut_b); printf "rtsp=%s\n" $(ps | grep -c "[r]tsp"); echo "last: $(grep -aE "now set to (day|night)" /tmp/rtsp.log 2>/dev/null | tail -1 | sed "s/\x1b\[[0-9;]*m//g")"'
+
+if [ -z "$VAL" ]; then
+    exec "$(dirname "$0")/cam" "printf 'photo=%s\n' \"\$(cat /tmp/photo 2>/dev/null || echo none)\"; $READ"
+fi
+
+# Write the value, give the 5 s poll a full cycle to notice, then report.
+exec "$(dirname "$0")/cam" "printf '%s\n' $VAL > /tmp/photo; sleep 7; printf 'photo=%s\n' \"\$(cat /tmp/photo)\"; $READ"

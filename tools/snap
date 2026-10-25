@@ -1,0 +1,19 @@
+#!/bin/sh
+# snap [OUT.jpg] [CHANNEL] -- grab one still from the camera over RTSP.
+#
+#   tools/snap                      -> work/video/captures/snap-HHMMSS.jpg, /vs0
+#   tools/snap /tmp/look.jpg vs1    -> sub channel
+#
+# The stream needs ~15 s after a fresh boot (4 "get frame failed" lines at
+# startup are normal); a single frame request after that returns immediately.
+set -eu
+cd "$(dirname "$0")/.."
+
+OUT=${1:-work/video/captures/snap-$(date +%H%M%S).jpg}
+CH=${2:-vs0}
+mkdir -p "$(dirname "$OUT")"
+
+ffmpeg -v error -rtsp_transport tcp -i "rtsp://192.168.1.103:554/$CH" \
+    -frames:v 1 -y "$OUT"
+
+printf '%s %s\n' "$OUT" "$(ls -l "$OUT" | awk '{print $5" bytes"}')"

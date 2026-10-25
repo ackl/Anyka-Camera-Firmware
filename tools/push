@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""push LOCAL REMOTE -- send a file to the camera with a single raw TCP stream."""
+import socket, sys, os, hashlib, time
+
+LOCAL, REMOTE = sys.argv[1], sys.argv[2]
+PORT = int(os.environ.get("PUSH_PORT", "9999"))
+HOST = os.environ.get("CAM_HOST", "192.168.1.103")
+data = open(LOCAL, "rb").read()
+sha = hashlib.sha256(data).hexdigest()
+
+# listener thread on the camera, started via the telnet runner by the caller
+s = socket.create_connection((HOST, PORT), 10)
+s.sendall(data)
+s.shutdown(socket.SHUT_WR)
+s.close()
+print("sent %d bytes sha256 %s -> %s:%s" % (len(data), sha, HOST, REMOTE))

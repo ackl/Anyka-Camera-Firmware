@@ -1,0 +1,26 @@
+# camweb — live video, PTZ and LED panel on firefly.
+#
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now camweb
+#   journalctl --user -u camweb -f
+#
+# The panel listens on 8090; ufw's default policy here is DROP, so the port has
+# to be allowed once by hand (this unit does not touch the firewall):
+#   sudo ufw allow 8090/tcp                     # LAN browsing
+#   sudo ufw allow in on tailscale0 to any port 8090 proto tcp   # tailnet only
+[Unit]
+Description=camweb — Anyka camera video/PTZ/LED panel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/andrew/lab/anyka
+ExecStart=/home/andrew/lab/anyka/tools/rust/camweb/target/camweb serve --listen 0.0.0.0:8090
+Restart=always
+RestartSec=3
+Environment=CAMWEB_WIDTH=960
+Environment=CAMWEB_QUALITY=6
+
+[Install]
+WantedBy=default.target

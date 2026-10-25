@@ -1,0 +1,726 @@
+
+analysis/motor-research/kernel.elf:     file format elf32-littlearm
+
+
+Disassembly of section .kernel:
+
+c018b02c <ak_motor_poll>:
+c018b02c:	e1a0c00d 	mov	ip, sp
+c018b030:	e92dd818 	push	{r3, r4, fp, ip, lr, pc}
+c018b034:	e24cb004 	sub	fp, ip, #4
+c018b038:	e2512000 	subs	r2, r1, #0
+c018b03c:	e5904068 	ldr	r4, [r0, #104]	@ 0x68
+c018b040:	0a000005 	beq	c018b05c <ak_motor_poll+0x30>
+c018b044:	e5923000 	ldr	r3, [r2]
+c018b048:	e3530000 	cmp	r3, #0
+c018b04c:	0a000002 	beq	c018b05c <ak_motor_poll+0x30>
+c018b050:	e2941018 	adds	r1, r4, #24
+c018b054:	0a000000 	beq	c018b05c <ak_motor_poll+0x30>
+c018b058:	e12fff33 	blx	r3
+c018b05c:	e5940004 	ldr	r0, [r4, #4]
+c018b060:	e2900000 	adds	r0, r0, #0
+c018b064:	13a00001 	movne	r0, #1
+c018b068:	e89da818 	ldm	sp, {r3, r4, fp, sp, pc}
+
+c018b06c <ak_motor_turn>:
+c018b06c:	e1a0c00d 	mov	ip, sp
+c018b070:	e92dd830 	push	{r4, r5, fp, ip, lr, pc}
+c018b074:	e24cb004 	sub	fp, ip, #4
+c018b078:	e1a0c000 	mov	ip, r0
+c018b07c:	e5903000 	ldr	r3, [r0]
+c018b080:	e10f4000 	mrs	r4, CPSR
+c018b084:	e3840080 	orr	r0, r4, #128	@ 0x80
+c018b088:	e121f000 	msr	CPSR_c, r0
+c018b08c:	e5832084 	str	r2, [r3, #132]	@ 0x84
+c018b090:	e5832088 	str	r2, [r3, #136]	@ 0x88
+c018b094:	e3a02001 	mov	r2, #1
+c018b098:	e5831080 	str	r1, [r3, #128]	@ 0x80
+c018b09c:	e5832090 	str	r2, [r3, #144]	@ 0x90
+c018b0a0:	e1a01003 	mov	r1, r3
+c018b0a4:	e593207c 	ldr	r2, [r3, #124]	@ 0x7c
+c018b0a8:	e59f0020 	ldr	r0, [pc, #32]	@ c018b0d0 <ak_motor_turn+0x64>
+c018b0ac:	e59c3024 	ldr	r3, [ip, #36]	@ 0x24
+c018b0b0:	ebfa22f6 	bl	c0013c90 <ak39_timer_start>
+c018b0b4:	e2505000 	subs	r5, r0, #0
+c018b0b8:	0a000001 	beq	c018b0c4 <ak_motor_turn+0x58>
+c018b0bc:	e59f0010 	ldr	r0, [pc, #16]	@ c018b0d4 <ak_motor_turn+0x68>
+c018b0c0:	eb05b05c 	bl	c02f7238 <printk>
+c018b0c4:	e121f004 	msr	CPSR_c, r4
+c018b0c8:	e1a00005 	mov	r0, r5
+c018b0cc:	e89da830 	ldm	sp, {r4, r5, fp, sp, pc}
+c018b0d0:	c018b894 	mulsgt	r8, r4, r8
+c018b0d4:	c0391897 	mlasgt	r9, r7, r8, r1
+
+c018b0d8 <ak_motor_event_notify>:
+c018b0d8:	e1a0c00d 	mov	ip, sp
+c018b0dc:	e92dd800 	push	{fp, ip, lr, pc}
+c018b0e0:	e24cb004 	sub	fp, ip, #4
+c018b0e4:	e59030a0 	ldr	r3, [r0, #160]	@ 0xa0
+c018b0e8:	e3530000 	cmp	r3, #0
+c018b0ec:	089da800 	ldmeq	sp, {fp, sp, pc}
+c018b0f0:	e5831008 	str	r1, [r3, #8]
+c018b0f4:	e593100c 	ldr	r1, [r3, #12]
+c018b0f8:	e1812002 	orr	r2, r1, r2
+c018b0fc:	e583200c 	str	r2, [r3, #12]
+c018b100:	e5902088 	ldr	r2, [r0, #136]	@ 0x88
+c018b104:	e3a01001 	mov	r1, #1
+c018b108:	e5832010 	str	r2, [r3, #16]
+c018b10c:	e5831004 	str	r1, [r3, #4]
+c018b110:	e2830018 	add	r0, r3, #24
+c018b114:	e1a02001 	mov	r2, r1
+c018b118:	e3a03000 	mov	r3, #0
+c018b11c:	ebfaaf7f 	bl	c0036f20 <__wake_up>
+c018b120:	e89da800 	ldm	sp, {fp, sp, pc}
+
+c018b124 <ak_motor_read>:
+c018b124:	e1a0c00d 	mov	ip, sp
+c018b128:	e92dd9f0 	push	{r4, r5, r6, r7, r8, fp, ip, lr, pc}
+c018b12c:	e24cb004 	sub	fp, ip, #4
+c018b130:	e24dd01c 	sub	sp, sp, #28
+c018b134:	e5904068 	ldr	r4, [r0, #104]	@ 0x68
+c018b138:	e1a05001 	mov	r5, r1
+c018b13c:	e5941004 	ldr	r1, [r4, #4]
+c018b140:	e1a0300d 	mov	r3, sp
+c018b144:	e3510000 	cmp	r1, #0
+c018b148:	e3c37d7f 	bic	r7, r3, #8128	@ 0x1fc0
+c018b14c:	1a00001e 	bne	c018b1cc <ak_motor_read+0xa8>
+c018b150:	e3a02014 	mov	r2, #20
+c018b154:	e24b0038 	sub	r0, fp, #56	@ 0x38
+c018b158:	ebfec958 	bl	c013d6c0 <memset>
+c018b15c:	e3c7303f 	bic	r3, r7, #63	@ 0x3f
+c018b160:	e593200c 	ldr	r2, [r3, #12]
+c018b164:	e24b1038 	sub	r1, fp, #56	@ 0x38
+c018b168:	e50b2034 	str	r2, [fp, #-52]	@ 0xffffffcc
+c018b16c:	e59f20c0 	ldr	r2, [pc, #192]	@ c018b234 <ak_motor_read+0x110>
+c018b170:	e2846018 	add	r6, r4, #24
+c018b174:	e50b2030 	str	r2, [fp, #-48]	@ 0xffffffd0
+c018b178:	e281200c 	add	r2, r1, #12
+c018b17c:	e50b202c 	str	r2, [fp, #-44]	@ 0xffffffd4
+c018b180:	e50b2028 	str	r2, [fp, #-40]	@ 0xffffffd8
+c018b184:	e1a08003 	mov	r8, r3
+c018b188:	e1a00006 	mov	r0, r6
+c018b18c:	e24b1038 	sub	r1, fp, #56	@ 0x38
+c018b190:	e3a02001 	mov	r2, #1
+c018b194:	ebfa957e 	bl	c0030794 <prepare_to_wait>
+c018b198:	e5943004 	ldr	r3, [r4, #4]
+c018b19c:	e3530000 	cmp	r3, #0
+c018b1a0:	1a000006 	bne	c018b1c0 <ak_motor_read+0x9c>
+c018b1a4:	e598300c 	ldr	r3, [r8, #12]
+c018b1a8:	e5933004 	ldr	r3, [r3, #4]
+c018b1ac:	e5933000 	ldr	r3, [r3]
+c018b1b0:	e3130001 	tst	r3, #1
+c018b1b4:	1a000001 	bne	c018b1c0 <ak_motor_read+0x9c>
+c018b1b8:	eb05c09c 	bl	c02fb430 <schedule>
+c018b1bc:	eafffff1 	b	c018b188 <ak_motor_read+0x64>
+c018b1c0:	e1a00006 	mov	r0, r6
+c018b1c4:	e24b1038 	sub	r1, fp, #56	@ 0x38
+c018b1c8:	ebfa95a1 	bl	c0030854 <finish_wait>
+c018b1cc:	e10f6000 	mrs	r6, CPSR
+c018b1d0:	e3863080 	orr	r3, r6, #128	@ 0x80
+c018b1d4:	e121f003 	msr	CPSR_c, r3
+c018b1d8:	e3c7703f 	bic	r7, r7, #63	@ 0x3f
+c018b1dc:	e5973008 	ldr	r3, [r7, #8]
+c018b1e0:	e295200c 	adds	r2, r5, #12
+c018b1e4:	30d22003 	sbcscc	r2, r2, r3
+c018b1e8:	33a03000 	movcc	r3, #0
+c018b1ec:	e3530000 	cmp	r3, #0
+c018b1f0:	e2848008 	add	r8, r4, #8
+c018b1f4:	13a0500c 	movne	r5, #12
+c018b1f8:	1a000004 	bne	c018b210 <ak_motor_read+0xec>
+c018b1fc:	e1a00005 	mov	r0, r5
+c018b200:	e1a01008 	mov	r1, r8
+c018b204:	e3a0200c 	mov	r2, #12
+c018b208:	ebfec124 	bl	c013b6a0 <__copy_to_user_std>
+c018b20c:	e1a05000 	mov	r5, r0
+c018b210:	e1a00008 	mov	r0, r8
+c018b214:	e3a0100c 	mov	r1, #12
+c018b218:	ebfec958 	bl	c013d780 <__memzero>
+c018b21c:	e3a03000 	mov	r3, #0
+c018b220:	e5843004 	str	r3, [r4, #4]
+c018b224:	e121f006 	msr	CPSR_c, r6
+c018b228:	e1a00005 	mov	r0, r5
+c018b22c:	e24bd020 	sub	sp, fp, #32
+c018b230:	e89da9f0 	ldm	sp, {r4, r5, r6, r7, r8, fp, sp, pc}
+c018b234:	c0030a08 	andgt	r0, r3, r8, lsl #20
+
+c018b238 <ak_motor_open>:
+c018b238:	e1a0c00d 	mov	ip, sp
+c018b23c:	e92dd8f0 	push	{r4, r5, r6, r7, fp, ip, lr, pc}
+c018b240:	e24cb004 	sub	fp, ip, #4
+c018b244:	e591300c 	ldr	r3, [r1, #12]
+c018b248:	e1a07001 	mov	r7, r1
+c018b24c:	e5933020 	ldr	r3, [r3, #32]
+c018b250:	e593102c 	ldr	r1, [r3, #44]	@ 0x2c
+c018b254:	e59f3110 	ldr	r3, [pc, #272]	@ c018b36c <ak_motor_open+0x134>
+c018b258:	e3c114ff 	bic	r1, r1, #-16777216	@ 0xff000000
+c018b25c:	e5b35050 	ldr	r5, [r3, #80]!	@ 0x50
+c018b260:	e3c1160f 	bic	r1, r1, #15728640	@ 0xf00000
+c018b264:	e2455094 	sub	r5, r5, #148	@ 0x94
+c018b268:	e2852094 	add	r2, r5, #148	@ 0x94
+c018b26c:	e1520003 	cmp	r2, r3
+c018b270:	0a000004 	beq	c018b288 <ak_motor_open+0x50>
+c018b274:	e5952000 	ldr	r2, [r5]
+c018b278:	e1510002 	cmp	r1, r2
+c018b27c:	0a000005 	beq	c018b298 <ak_motor_open+0x60>
+c018b280:	e5955094 	ldr	r5, [r5, #148]	@ 0x94
+c018b284:	eafffff6 	b	c018b264 <ak_motor_open+0x2c>
+c018b288:	e59f00e0 	ldr	r0, [pc, #224]	@ c018b370 <ak_motor_open+0x138>
+c018b28c:	eb05afe9 	bl	c02f7238 <printk>
+c018b290:	e3e00012 	mvn	r0, #18
+c018b294:	e89da8f0 	ldm	sp, {r4, r5, r6, r7, fp, sp, pc}
+c018b298:	e59530a0 	ldr	r3, [r5, #160]	@ 0xa0
+c018b29c:	e3530000 	cmp	r3, #0
+c018b2a0:	0a000003 	beq	c018b2b4 <ak_motor_open+0x7c>
+c018b2a4:	e59f00c8 	ldr	r0, [pc, #200]	@ c018b374 <ak_motor_open+0x13c>
+c018b2a8:	eb05afe2 	bl	c02f7238 <printk>
+c018b2ac:	e59540a0 	ldr	r4, [r5, #160]	@ 0xa0
+c018b2b0:	ea000028 	b	c018b358 <ak_motor_open+0x120>
+c018b2b4:	e59f30bc 	ldr	r3, [pc, #188]	@ c018b378 <ak_motor_open+0x140>
+c018b2b8:	e5930018 	ldr	r0, [r3, #24]
+c018b2bc:	e3500000 	cmp	r0, #0
+c018b2c0:	0a000007 	beq	c018b2e4 <ak_motor_open+0xac>
+c018b2c4:	e59f10b0 	ldr	r1, [pc, #176]	@ c018b37c <ak_motor_open+0x144>
+c018b2c8:	ebfb9868 	bl	c0071470 <kmem_cache_alloc>
+c018b2cc:	e2504000 	subs	r4, r0, #0
+c018b2d0:	1a000004 	bne	c018b2e8 <ak_motor_open+0xb0>
+c018b2d4:	e59f00a4 	ldr	r0, [pc, #164]	@ c018b380 <ak_motor_open+0x148>
+c018b2d8:	eb05afd6 	bl	c02f7238 <printk>
+c018b2dc:	e3e0000b 	mvn	r0, #11
+c018b2e0:	e89da8f0 	ldm	sp, {r4, r5, r6, r7, fp, sp, pc}
+c018b2e4:	e3a04010 	mov	r4, #16
+c018b2e8:	e59f2094 	ldr	r2, [pc, #148]	@ c018b384 <ak_motor_open+0x14c>
+c018b2ec:	e2840018 	add	r0, r4, #24
+c018b2f0:	e59f1090 	ldr	r1, [pc, #144]	@ c018b388 <ak_motor_open+0x150>
+c018b2f4:	ebfa94ec 	bl	c00306ac <__init_waitqueue_head>
+c018b2f8:	e3a03001 	mov	r3, #1
+c018b2fc:	e5845000 	str	r5, [r4]
+c018b300:	e3a06000 	mov	r6, #0
+c018b304:	e58540a0 	str	r4, [r5, #160]	@ 0xa0
+c018b308:	e5843014 	str	r3, [r4, #20]
+c018b30c:	e3a03b02 	mov	r3, #2048	@ 0x800
+c018b310:	e5843028 	str	r3, [r4, #40]	@ 0x28
+c018b314:	e584302c 	str	r3, [r4, #44]	@ 0x2c
+c018b318:	e584600c 	str	r6, [r4, #12]
+c018b31c:	e5846020 	str	r6, [r4, #32]
+c018b320:	e595005c 	ldr	r0, [r5, #92]	@ 0x5c
+c018b324:	e3a01e2d 	mov	r1, #720	@ 0x2d0
+c018b328:	e1a00600 	lsl	r0, r0, #12
+c018b32c:	ebfec6b9 	bl	c013ce18 <__aeabi_idiv>
+c018b330:	e1a01000 	mov	r1, r0
+c018b334:	e3a00ffa 	mov	r0, #1000	@ 0x3e8
+c018b338:	ebfec6b6 	bl	c013ce18 <__aeabi_idiv>
+c018b33c:	e3500002 	cmp	r0, #2
+c018b340:	a1a01000 	movge	r1, r0
+c018b344:	b3a01002 	movlt	r1, #2
+c018b348:	e3a00ffa 	mov	r0, #1000	@ 0x3e8
+c018b34c:	ebfec6b1 	bl	c013ce18 <__aeabi_idiv>
+c018b350:	e5846030 	str	r6, [r4, #48]	@ 0x30
+c018b354:	e5840024 	str	r0, [r4, #36]	@ 0x24
+c018b358:	e5874068 	str	r4, [r7, #104]	@ 0x68
+c018b35c:	e59f0028 	ldr	r0, [pc, #40]	@ c018b38c <ak_motor_open+0x154>
+c018b360:	eb05afb4 	bl	c02f7238 <printk>
+c018b364:	e3a00000 	mov	r0, #0
+c018b368:	e89da8f0 	ldm	sp, {r4, r5, r6, r7, fp, sp, pc}
+c018b36c:	c04048d0 	ldrdgt	r4, [r0], #-128	@ 0xffffff80
+c018b370:	c0391936 	eorsgt	r1, r9, r6, lsr r9
+c018b374:	c03918b8 	ldrhtgt	r1, [r9], -r8
+c018b378:	c0423ccc 	subgt	r3, r2, ip, asr #25
+c018b37c:	000080d0 	ldrdeq	r8, [r0], -r0
+c018b380:	c03918d6 	ldrsbtgt	r1, [r9], -r6
+c018b384:	c042a940 	subgt	sl, r2, r0, asr #18
+c018b388:	c0391905 	eorsgt	r1, r9, r5, lsl #18
+c018b38c:	c0391917 	eorsgt	r1, r9, r7, lsl r9
+
+c018b390 <ak_motor_hit_irq>:
+c018b390:	e1a0c00d 	mov	ip, sp
+c018b394:	e92dd830 	push	{r4, r5, fp, ip, lr, pc}
+c018b398:	e24cb004 	sub	fp, ip, #4
+c018b39c:	e1a04001 	mov	r4, r1
+c018b3a0:	e1a05000 	mov	r5, r0
+c018b3a4:	ebfb02a8 	bl	c004be4c <disable_irq_nosync>
+c018b3a8:	e59f3020 	ldr	r3, [pc, #32]	@ c018b3d0 <ak_motor_hit_irq+0x40>
+c018b3ac:	e5845048 	str	r5, [r4, #72]	@ 0x48
+c018b3b0:	e3a00032 	mov	r0, #50	@ 0x32
+c018b3b4:	e5935000 	ldr	r5, [r3]
+c018b3b8:	ebfa447f 	bl	c001c5bc <msecs_to_jiffies>
+c018b3bc:	e0801005 	add	r1, r0, r5
+c018b3c0:	e2840060 	add	r0, r4, #96	@ 0x60
+c018b3c4:	ebfa5cf9 	bl	c00227b0 <mod_timer>
+c018b3c8:	e3a00001 	mov	r0, #1
+c018b3cc:	e89da830 	ldm	sp, {r4, r5, fp, sp, pc}
+c018b3d0:	c03f9bc0 	eorsgt	r9, pc, r0, asr #23
+
+c018b3d4 <ak_motor_hit_detect>:
+c018b3d4:	e1a0c00d 	mov	ip, sp
+c018b3d8:	e92dd9f8 	push	{r3, r4, r5, r6, r7, r8, fp, ip, lr, pc}
+c018b3dc:	e24cb004 	sub	fp, ip, #4
+c018b3e0:	e1a05000 	mov	r5, r0
+c018b3e4:	e10f6000 	mrs	r6, CPSR
+c018b3e8:	e3863080 	orr	r3, r6, #128	@ 0x80
+c018b3ec:	e121f003 	msr	CPSR_c, r3
+c018b3f0:	e5903048 	ldr	r3, [r0, #72]	@ 0x48
+c018b3f4:	e5900028 	ldr	r0, [r0, #40]	@ 0x28
+c018b3f8:	e1530000 	cmp	r3, r0
+c018b3fc:	0a000004 	beq	c018b414 <ak_motor_hit_detect+0x40>
+c018b400:	e595002c 	ldr	r0, [r5, #44]	@ 0x2c
+c018b404:	e1530000 	cmp	r3, r0
+c018b408:	1a000016 	bne	c018b468 <ak_motor_hit_detect+0x94>
+c018b40c:	e3a07001 	mov	r7, #1
+c018b410:	ea000000 	b	c018b418 <ak_motor_hit_detect+0x44>
+c018b414:	e3a07000 	mov	r7, #0
+c018b418:	e0854107 	add	r4, r5, r7, lsl #2
+c018b41c:	e5943040 	ldr	r3, [r4, #64]	@ 0x40
+c018b420:	e5948038 	ldr	r8, [r4, #56]	@ 0x38
+c018b424:	e1580003 	cmp	r8, r3
+c018b428:	13a08002 	movne	r8, #2
+c018b42c:	03a08001 	moveq	r8, #1
+c018b430:	e3530008 	cmp	r3, #8
+c018b434:	03a03004 	moveq	r3, #4
+c018b438:	13a03008 	movne	r3, #8
+c018b43c:	e5843040 	str	r3, [r4, #64]	@ 0x40
+c018b440:	e5941040 	ldr	r1, [r4, #64]	@ 0x40
+c018b444:	ebfb0795 	bl	c004d2a0 <irq_set_irq_type>
+c018b448:	e5940028 	ldr	r0, [r4, #40]	@ 0x28
+c018b44c:	ebfb02bf 	bl	c004bf50 <enable_irq>
+c018b450:	e3580002 	cmp	r8, #2
+c018b454:	1a000003 	bne	c018b468 <ak_motor_hit_detect+0x94>
+c018b458:	e1a00005 	mov	r0, r5
+c018b45c:	e1a01007 	mov	r1, r7
+c018b460:	e1a02008 	mov	r2, r8
+c018b464:	ebffff1b 	bl	c018b0d8 <ak_motor_event_notify>
+c018b468:	e121f006 	msr	CPSR_c, r6
+c018b46c:	e89da9f8 	ldm	sp, {r3, r4, r5, r6, r7, r8, fp, sp, pc}
+
+c018b470 <ak_motor_stop.isra.6>:
+c018b470:	e1a0c00d 	mov	ip, sp
+c018b474:	e92dd800 	push	{fp, ip, lr, pc}
+c018b478:	e24cb004 	sub	fp, ip, #4
+c018b47c:	e10f3000 	mrs	r3, CPSR
+c018b480:	e3832080 	orr	r2, r3, #128	@ 0x80
+c018b484:	e121f002 	msr	CPSR_c, r2
+c018b488:	e3a02002 	mov	r2, #2
+c018b48c:	e5802090 	str	r2, [r0, #144]	@ 0x90
+c018b490:	e121f003 	msr	CPSR_c, r3
+c018b494:	e89da800 	ldm	sp, {fp, sp, pc}
+
+c018b498 <ak_motor_close>:
+c018b498:	e1a0c00d 	mov	ip, sp
+c018b49c:	e92dd800 	push	{fp, ip, lr, pc}
+c018b4a0:	e24cb004 	sub	fp, ip, #4
+c018b4a4:	e591300c 	ldr	r3, [r1, #12]
+c018b4a8:	e59f2058 	ldr	r2, [pc, #88]	@ c018b508 <ak_motor_close+0x70>
+c018b4ac:	e5933020 	ldr	r3, [r3, #32]
+c018b4b0:	e593002c 	ldr	r0, [r3, #44]	@ 0x2c
+c018b4b4:	e5b23050 	ldr	r3, [r2, #80]!	@ 0x50
+c018b4b8:	e3c004ff 	bic	r0, r0, #-16777216	@ 0xff000000
+c018b4bc:	e3c0060f 	bic	r0, r0, #15728640	@ 0xf00000
+c018b4c0:	e2433094 	sub	r3, r3, #148	@ 0x94
+c018b4c4:	e2831094 	add	r1, r3, #148	@ 0x94
+c018b4c8:	e1510002 	cmp	r1, r2
+c018b4cc:	0a000004 	beq	c018b4e4 <ak_motor_close+0x4c>
+c018b4d0:	e5931000 	ldr	r1, [r3]
+c018b4d4:	e1500001 	cmp	r0, r1
+c018b4d8:	0a000005 	beq	c018b4f4 <ak_motor_close+0x5c>
+c018b4dc:	e5933094 	ldr	r3, [r3, #148]	@ 0x94
+c018b4e0:	eafffff6 	b	c018b4c0 <ak_motor_close+0x28>
+c018b4e4:	e59f0020 	ldr	r0, [pc, #32]	@ c018b50c <ak_motor_close+0x74>
+c018b4e8:	eb05af52 	bl	c02f7238 <printk>
+c018b4ec:	e3e00012 	mvn	r0, #18
+c018b4f0:	e89da800 	ldm	sp, {fp, sp, pc}
+c018b4f4:	e59330a0 	ldr	r3, [r3, #160]	@ 0xa0
+c018b4f8:	e5930000 	ldr	r0, [r3]
+c018b4fc:	ebffffdb 	bl	c018b470 <ak_motor_stop.isra.6>
+c018b500:	e3a00000 	mov	r0, #0
+c018b504:	e89da800 	ldm	sp, {fp, sp, pc}
+c018b508:	c04048d0 	ldrdgt	r4, [r0], #-128	@ 0xffffff80
+c018b50c:	c0391936 	eorsgt	r1, r9, r6, lsr r9
+
+c018b510 <ak_motor_ioctl>:
+c018b510:	e1a0c00d 	mov	ip, sp
+c018b514:	e92dd9f0 	push	{r4, r5, r6, r7, r8, fp, ip, lr, pc}
+c018b518:	e24cb004 	sub	fp, ip, #4
+c018b51c:	e24dd024 	sub	sp, sp, #36	@ 0x24
+c018b520:	e1a03421 	lsr	r3, r1, #8
+c018b524:	e5905068 	ldr	r5, [r0, #104]	@ 0x68
+c018b528:	e20330ff 	and	r3, r3, #255	@ 0xff
+c018b52c:	e353006d 	cmp	r3, #109	@ 0x6d
+c018b530:	e1a04002 	mov	r4, r2
+c018b534:	e5956000 	ldr	r6, [r5]
+c018b538:	1a0000b1 	bne	c018b804 <ak_motor_ioctl+0x2f4>
+c018b53c:	e3510000 	cmp	r1, #0
+c018b540:	aa00000a 	bge	c018b570 <ak_motor_ioctl+0x60>
+c018b544:	e1a0000d 	mov	r0, sp
+c018b548:	e3c03d7f 	bic	r3, r0, #8128	@ 0x1fc0
+c018b54c:	e1a02101 	lsl	r2, r1, #2
+c018b550:	e3c3303f 	bic	r3, r3, #63	@ 0x3f
+c018b554:	e1a02922 	lsr	r2, r2, #18
+c018b558:	e5933008 	ldr	r3, [r3, #8]
+c018b55c:	e0940002 	adds	r0, r4, r2
+c018b560:	30d00003 	sbcscc	r0, r0, r3
+c018b564:	33a03000 	movcc	r3, #0
+c018b568:	e3530000 	cmp	r3, #0
+c018b56c:	1a0000a6 	bne	c018b80c <ak_motor_ioctl+0x2fc>
+c018b570:	e3110101 	tst	r1, #1073741824	@ 0x40000000
+c018b574:	0a00000a 	beq	c018b5a4 <ak_motor_ioctl+0x94>
+c018b578:	e1a0000d 	mov	r0, sp
+c018b57c:	e3c03d7f 	bic	r3, r0, #8128	@ 0x1fc0
+c018b580:	e1a02101 	lsl	r2, r1, #2
+c018b584:	e3c3303f 	bic	r3, r3, #63	@ 0x3f
+c018b588:	e1a02922 	lsr	r2, r2, #18
+c018b58c:	e5933008 	ldr	r3, [r3, #8]
+c018b590:	e0940002 	adds	r0, r4, r2
+c018b594:	30d00003 	sbcscc	r0, r0, r3
+c018b598:	33a03000 	movcc	r3, #0
+c018b59c:	e3530000 	cmp	r3, #0
+c018b5a0:	1a000099 	bne	c018b80c <ak_motor_ioctl+0x2fc>
+c018b5a4:	e59f327c 	ldr	r3, [pc, #636]	@ c018b828 <ak_motor_ioctl+0x318>
+c018b5a8:	e1510003 	cmp	r1, r3
+c018b5ac:	0a000037 	beq	c018b690 <ak_motor_ioctl+0x180>
+c018b5b0:	8a000009 	bhi	c018b5dc <ak_motor_ioctl+0xcc>
+c018b5b4:	e2433003 	sub	r3, r3, #3
+c018b5b8:	e1510003 	cmp	r1, r3
+c018b5bc:	0a000015 	beq	c018b618 <ak_motor_ioctl+0x108>
+c018b5c0:	e2833002 	add	r3, r3, #2
+c018b5c4:	e1510003 	cmp	r1, r3
+c018b5c8:	0a000028 	beq	c018b670 <ak_motor_ioctl+0x160>
+c018b5cc:	e243300d 	sub	r3, r3, #13
+c018b5d0:	e1510003 	cmp	r1, r3
+c018b5d4:	1a00008e 	bne	c018b814 <ak_motor_ioctl+0x304>
+c018b5d8:	ea000070 	b	c018b7a0 <ak_motor_ioctl+0x290>
+c018b5dc:	e59f3248 	ldr	r3, [pc, #584]	@ c018b82c <ak_motor_ioctl+0x31c>
+c018b5e0:	e1510003 	cmp	r1, r3
+c018b5e4:	0a000048 	beq	c018b70c <ak_motor_ioctl+0x1fc>
+c018b5e8:	3a000032 	bcc	c018b6b8 <ak_motor_ioctl+0x1a8>
+c018b5ec:	e2833033 	add	r3, r3, #51	@ 0x33
+c018b5f0:	e1510003 	cmp	r1, r3
+c018b5f4:	0a000049 	beq	c018b720 <ak_motor_ioctl+0x210>
+c018b5f8:	e24331df 	sub	r3, r3, #-1073741769	@ 0xc0000037
+c018b5fc:	e1510003 	cmp	r1, r3
+c018b600:	1a000083 	bne	c018b814 <ak_motor_ioctl+0x304>
+c018b604:	e3a00000 	mov	r0, #0
+c018b608:	e596205c 	ldr	r2, [r6, #92]	@ 0x5c
+c018b60c:	e1a03000 	mov	r3, r0
+c018b610:	e4a42000 	strt	r2, [r4], #0
+c018b614:	ea000081 	b	c018b820 <ak_motor_ioctl+0x310>
+c018b618:	e3a07000 	mov	r7, #0
+c018b61c:	e1a02007 	mov	r2, r7
+c018b620:	e4b40000 	ldrt	r0, [r4], #0
+c018b624:	e2402001 	sub	r2, r0, #1
+c018b628:	e35200c7 	cmp	r2, #199	@ 0xc7
+c018b62c:	8a00007a 	bhi	c018b81c <ak_motor_ioctl+0x30c>
+c018b630:	e586005c 	str	r0, [r6, #92]	@ 0x5c
+c018b634:	e3a01e2d 	mov	r1, #720	@ 0x2d0
+c018b638:	e1a00600 	lsl	r0, r0, #12
+c018b63c:	ebfec5f5 	bl	c013ce18 <__aeabi_idiv>
+c018b640:	e1a01000 	mov	r1, r0
+c018b644:	e3a00ffa 	mov	r0, #1000	@ 0x3e8
+c018b648:	ebfec5f2 	bl	c013ce18 <__aeabi_idiv>
+c018b64c:	e3500002 	cmp	r0, #2
+c018b650:	a1a01000 	movge	r1, r0
+c018b654:	b3a01002 	movlt	r1, #2
+c018b658:	e3510002 	cmp	r1, #2
+c018b65c:	33a01002 	movcc	r1, #2
+c018b660:	e3a00ffa 	mov	r0, #1000	@ 0x3e8
+c018b664:	ebfec59c 	bl	c013ccdc <__aeabi_uidiv>
+c018b668:	e5850024 	str	r0, [r5, #36]	@ 0x24
+c018b66c:	ea000029 	b	c018b718 <ak_motor_ioctl+0x208>
+c018b670:	e3a06000 	mov	r6, #0
+c018b674:	e1a03006 	mov	r3, r6
+c018b678:	e4b42000 	ldrt	r2, [r4], #0
+c018b67c:	e1520006 	cmp	r2, r6
+c018b680:	ba000065 	blt	c018b81c <ak_motor_ioctl+0x30c>
+c018b684:	e1a00005 	mov	r0, r5
+c018b688:	e1a01006 	mov	r1, r6
+c018b68c:	ea000006 	b	c018b6ac <ak_motor_ioctl+0x19c>
+c018b690:	e3a06000 	mov	r6, #0
+c018b694:	e1a03006 	mov	r3, r6
+c018b698:	e4b42000 	ldrt	r2, [r4], #0
+c018b69c:	e1520006 	cmp	r2, r6
+c018b6a0:	ba00005d 	blt	c018b81c <ak_motor_ioctl+0x30c>
+c018b6a4:	e1a00005 	mov	r0, r5
+c018b6a8:	e3a01001 	mov	r1, #1
+c018b6ac:	ebfffe6e 	bl	c018b06c <ak_motor_turn>
+c018b6b0:	e1a00006 	mov	r0, r6
+c018b6b4:	ea000059 	b	c018b820 <ak_motor_ioctl+0x310>
+c018b6b8:	e5960030 	ldr	r0, [r6, #48]	@ 0x30
+c018b6bc:	ebfa1eef 	bl	c0013280 <ak_gpio_getpin>
+c018b6c0:	e5968038 	ldr	r8, [r6, #56]	@ 0x38
+c018b6c4:	e2581004 	subs	r1, r8, #4
+c018b6c8:	e2718000 	rsbs	r8, r1, #0
+c018b6cc:	e0b88001 	adcs	r8, r8, r1
+c018b6d0:	e0500008 	subs	r0, r0, r8
+c018b6d4:	e2708000 	rsbs	r8, r0, #0
+c018b6d8:	e0b88000 	adcs	r8, r8, r0
+c018b6dc:	e5960034 	ldr	r0, [r6, #52]	@ 0x34
+c018b6e0:	ebfa1ee6 	bl	c0013280 <ak_gpio_getpin>
+c018b6e4:	e596303c 	ldr	r3, [r6, #60]	@ 0x3c
+c018b6e8:	e1a07000 	mov	r7, r0
+c018b6ec:	e253c004 	subs	ip, r3, #4
+c018b6f0:	e27c3000 	rsbs	r3, ip, #0
+c018b6f4:	e0b3300c 	adcs	r3, r3, ip
+c018b6f8:	e1500003 	cmp	r0, r3
+c018b6fc:	03888002 	orreq	r8, r8, #2
+c018b700:	e3a03000 	mov	r3, #0
+c018b704:	e4a48000 	strt	r8, [r4], #0
+c018b708:	ea000000 	b	c018b710 <ak_motor_ioctl+0x200>
+c018b70c:	e3a07000 	mov	r7, #0
+c018b710:	e5950000 	ldr	r0, [r5]
+c018b714:	ebffff55 	bl	c018b470 <ak_motor_stop.isra.6>
+c018b718:	e1a00007 	mov	r0, r7
+c018b71c:	ea00003f 	b	c018b820 <ak_motor_ioctl+0x310>
+c018b720:	e595302c 	ldr	r3, [r5, #44]	@ 0x2c
+c018b724:	e50b3030 	str	r3, [fp, #-48]	@ 0xffffffd0
+c018b728:	e5953024 	ldr	r3, [r5, #36]	@ 0x24
+c018b72c:	e50b303c 	str	r3, [fp, #-60]	@ 0xffffffc4
+c018b730:	e5953028 	ldr	r3, [r5, #40]	@ 0x28
+c018b734:	e50b3034 	str	r3, [fp, #-52]	@ 0xffffffcc
+c018b738:	e5953000 	ldr	r3, [r5]
+c018b73c:	e5933090 	ldr	r3, [r3, #144]	@ 0x90
+c018b740:	e2532001 	subs	r2, r3, #1
+c018b744:	e2723000 	rsbs	r3, r2, #0
+c018b748:	e0b33002 	adcs	r3, r3, r2
+c018b74c:	e50b3044 	str	r3, [fp, #-68]	@ 0xffffffbc
+c018b750:	e3a03000 	mov	r3, #0
+c018b754:	e50b302c 	str	r3, [fp, #-44]	@ 0xffffffd4
+c018b758:	e50b3028 	str	r3, [fp, #-40]	@ 0xffffffd8
+c018b75c:	e50b3038 	str	r3, [fp, #-56]	@ 0xffffffc8
+c018b760:	e5953020 	ldr	r3, [r5, #32]
+c018b764:	e1a0200d 	mov	r2, sp
+c018b768:	e50b3040 	str	r3, [fp, #-64]	@ 0xffffffc0
+c018b76c:	e3c23d7f 	bic	r3, r2, #8128	@ 0x1fc0
+c018b770:	e3c3303f 	bic	r3, r3, #63	@ 0x3f
+c018b774:	e5933008 	ldr	r3, [r3, #8]
+c018b778:	e2942020 	adds	r2, r4, #32
+c018b77c:	30d22003 	sbcscc	r2, r2, r3
+c018b780:	33a03000 	movcc	r3, #0
+c018b784:	e3530000 	cmp	r3, #0
+c018b788:	1a00001f 	bne	c018b80c <ak_motor_ioctl+0x2fc>
+c018b78c:	e1a00004 	mov	r0, r4
+c018b790:	e24b1044 	sub	r1, fp, #68	@ 0x44
+c018b794:	e3a02020 	mov	r2, #32
+c018b798:	ebfebfc0 	bl	c013b6a0 <__copy_to_user_std>
+c018b79c:	ea00001f 	b	c018b820 <ak_motor_ioctl+0x310>
+c018b7a0:	e3a02014 	mov	r2, #20
+c018b7a4:	e24b0044 	sub	r0, fp, #68	@ 0x44
+c018b7a8:	e1a01004 	mov	r1, r4
+c018b7ac:	ebfebeb9 	bl	c013b298 <__copy_from_user>
+c018b7b0:	e51b203c 	ldr	r2, [fp, #-60]	@ 0xffffffc4
+c018b7b4:	e3520000 	cmp	r2, #0
+c018b7b8:	da000017 	ble	c018b81c <ak_motor_ioctl+0x30c>
+c018b7bc:	e51b3038 	ldr	r3, [fp, #-56]	@ 0xffffffc8
+c018b7c0:	e3530000 	cmp	r3, #0
+c018b7c4:	da000014 	ble	c018b81c <ak_motor_ioctl+0x30c>
+c018b7c8:	e1530002 	cmp	r3, r2
+c018b7cc:	ca000012 	bgt	c018b81c <ak_motor_ioctl+0x30c>
+c018b7d0:	e51b2044 	ldr	r2, [fp, #-68]	@ 0xffffffbc
+c018b7d4:	e3520000 	cmp	r2, #0
+c018b7d8:	ba00000f 	blt	c018b81c <ak_motor_ioctl+0x30c>
+c018b7dc:	e1520003 	cmp	r2, r3
+c018b7e0:	aa00000d 	bge	c018b81c <ak_motor_ioctl+0x30c>
+c018b7e4:	e51b3040 	ldr	r3, [fp, #-64]	@ 0xffffffc0
+c018b7e8:	e3530000 	cmp	r3, #0
+c018b7ec:	da00000a 	ble	c018b81c <ak_motor_ioctl+0x30c>
+c018b7f0:	e2850020 	add	r0, r5, #32
+c018b7f4:	e24b1044 	sub	r1, fp, #68	@ 0x44
+c018b7f8:	e3a02014 	mov	r2, #20
+c018b7fc:	ebfec607 	bl	c013d020 <memcpy>
+c018b800:	ea000003 	b	c018b814 <ak_motor_ioctl+0x304>
+c018b804:	e3e00018 	mvn	r0, #24
+c018b808:	ea000004 	b	c018b820 <ak_motor_ioctl+0x310>
+c018b80c:	e3e0000d 	mvn	r0, #13
+c018b810:	ea000002 	b	c018b820 <ak_motor_ioctl+0x310>
+c018b814:	e3a00000 	mov	r0, #0
+c018b818:	ea000000 	b	c018b820 <ak_motor_ioctl+0x310>
+c018b81c:	e3e00015 	mvn	r0, #21
+c018b820:	e24bd020 	sub	sp, fp, #32
+c018b824:	e89da9f0 	ldm	sp, {r4, r5, r6, r7, r8, fp, sp, pc}
+c018b828:	40046d0e 	andmi	r6, r4, lr, lsl #26
+c018b82c:	40046d10 	andmi	r6, r4, r0, lsl sp
+
+c018b830 <ak_motor_check_hit_in_runtime_dir>:
+c018b830:	e1a0c00d 	mov	ip, sp
+c018b834:	e92dd830 	push	{r4, r5, fp, ip, lr, pc}
+c018b838:	e24cb004 	sub	fp, ip, #4
+c018b83c:	e59030a4 	ldr	r3, [r0, #164]	@ 0xa4
+c018b840:	e3530000 	cmp	r3, #0
+c018b844:	0a000001 	beq	c018b850 <ak_motor_check_hit_in_runtime_dir+0x20>
+c018b848:	e3e04000 	mvn	r4, #0
+c018b84c:	ea00000d 	b	c018b888 <ak_motor_check_hit_in_runtime_dir+0x58>
+c018b850:	e5904080 	ldr	r4, [r0, #128]	@ 0x80
+c018b854:	e2944000 	adds	r4, r4, #0
+c018b858:	13a04001 	movne	r4, #1
+c018b85c:	e0800104 	add	r0, r0, r4, lsl #2
+c018b860:	e5905038 	ldr	r5, [r0, #56]	@ 0x38
+c018b864:	e5900030 	ldr	r0, [r0, #48]	@ 0x30
+c018b868:	e2555008 	subs	r5, r5, #8
+c018b86c:	13a05001 	movne	r5, #1
+c018b870:	ebfa1e82 	bl	c0013280 <ak_gpio_getpin>
+c018b874:	e1500005 	cmp	r0, r5
+c018b878:	e1a01000 	mov	r1, r0
+c018b87c:	1afffff1 	bne	c018b848 <ak_motor_check_hit_in_runtime_dir+0x18>
+c018b880:	e59f0008 	ldr	r0, [pc, #8]	@ c018b890 <ak_motor_check_hit_in_runtime_dir+0x60>
+c018b884:	eb05ae6b 	bl	c02f7238 <printk>
+c018b888:	e1a00004 	mov	r0, r4
+c018b88c:	e89da830 	ldm	sp, {r4, r5, fp, sp, pc}
+c018b890:	c0391a69 	eorsgt	r1, r9, r9, ror #20
+
+c018b894 <ak_motor_hw_timer_handler>:
+c018b894:	e1a0c00d 	mov	ip, sp
+c018b898:	e92ddff8 	push	{r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr, pc}
+c018b89c:	e24cb004 	sub	fp, ip, #4
+c018b8a0:	e59050a0 	ldr	r5, [r0, #160]	@ 0xa0
+c018b8a4:	e1a04000 	mov	r4, r0
+c018b8a8:	e3550000 	cmp	r5, #0
+c018b8ac:	0a000061 	beq	c018ba38 <ak_motor_hw_timer_handler+0x1a4>
+c018b8b0:	e10f6000 	mrs	r6, CPSR
+c018b8b4:	e3863080 	orr	r3, r6, #128	@ 0x80
+c018b8b8:	e121f003 	msr	CPSR_c, r3
+c018b8bc:	e5953014 	ldr	r3, [r5, #20]
+c018b8c0:	e3530000 	cmp	r3, #0
+c018b8c4:	0a000054 	beq	c018ba1c <ak_motor_hw_timer_handler+0x188>
+c018b8c8:	e5903084 	ldr	r3, [r0, #132]	@ 0x84
+c018b8cc:	e3530000 	cmp	r3, #0
+c018b8d0:	da000002 	ble	c018b8e0 <ak_motor_hw_timer_handler+0x4c>
+c018b8d4:	e5907090 	ldr	r7, [r0, #144]	@ 0x90
+c018b8d8:	e3570001 	cmp	r7, #1
+c018b8dc:	0a000011 	beq	c018b928 <ak_motor_hw_timer_handler+0x94>
+c018b8e0:	e3a03003 	mov	r3, #3
+c018b8e4:	e5843090 	str	r3, [r4, #144]	@ 0x90
+c018b8e8:	e1a07004 	mov	r7, r4
+c018b8ec:	e3a05004 	mov	r5, #4
+c018b8f0:	e597004c 	ldr	r0, [r7, #76]	@ 0x4c
+c018b8f4:	e3a01000 	mov	r1, #0
+c018b8f8:	ebfa1e57 	bl	c001325c <ak_gpio_setpin>
+c018b8fc:	e2555001 	subs	r5, r5, #1
+c018b900:	e2877004 	add	r7, r7, #4
+c018b904:	1afffff9 	bne	c018b8f0 <ak_motor_hw_timer_handler+0x5c>
+c018b908:	e1a00004 	mov	r0, r4
+c018b90c:	e1a01005 	mov	r1, r5
+c018b910:	e3a02004 	mov	r2, #4
+c018b914:	ebfffdef 	bl	c018b0d8 <ak_motor_event_notify>
+c018b918:	e5941088 	ldr	r1, [r4, #136]	@ 0x88
+c018b91c:	e59f0120 	ldr	r0, [pc, #288]	@ c018ba44 <ak_motor_hw_timer_handler+0x1b0>
+c018b920:	eb05ae44 	bl	c02f7238 <printk>
+c018b924:	ea00003c 	b	c018ba1c <ak_motor_hw_timer_handler+0x188>
+c018b928:	ebffffc0 	bl	c018b830 <ak_motor_check_hit_in_runtime_dir>
+c018b92c:	e2508000 	subs	r8, r0, #0
+c018b930:	ba00000c 	blt	c018b968 <ak_motor_hw_timer_handler+0xd4>
+c018b934:	e1a07004 	mov	r7, r4
+c018b938:	e3a05004 	mov	r5, #4
+c018b93c:	e597004c 	ldr	r0, [r7, #76]	@ 0x4c
+c018b940:	e3a01000 	mov	r1, #0
+c018b944:	ebfa1e44 	bl	c001325c <ak_gpio_setpin>
+c018b948:	e2555001 	subs	r5, r5, #1
+c018b94c:	e2877004 	add	r7, r7, #4
+c018b950:	1afffff9 	bne	c018b93c <ak_motor_hw_timer_handler+0xa8>
+c018b954:	e1a00004 	mov	r0, r4
+c018b958:	e1a01008 	mov	r1, r8
+c018b95c:	e3a02005 	mov	r2, #5
+c018b960:	ebfffddc 	bl	c018b0d8 <ak_motor_event_notify>
+c018b964:	ea00002c 	b	c018ba1c <ak_motor_hw_timer_handler+0x188>
+c018b968:	e594308c 	ldr	r3, [r4, #140]	@ 0x8c
+c018b96c:	e59f20d4 	ldr	r2, [pc, #212]	@ c018ba48 <ak_motor_hw_timer_handler+0x1b4>
+c018b970:	e1a09004 	mov	r9, r4
+c018b974:	e7d2a003 	ldrb	sl, [r2, r3]
+c018b978:	e5942080 	ldr	r2, [r4, #128]	@ 0x80
+c018b97c:	e3a08000 	mov	r8, #0
+c018b980:	e3520000 	cmp	r2, #0
+c018b984:	12833001 	addne	r3, r3, #1
+c018b988:	02833003 	addeq	r3, r3, #3
+c018b98c:	e213310e 	ands	r3, r3, #-2147483645	@ 0x80000003
+c018b990:	42433001 	submi	r3, r3, #1
+c018b994:	41e03f03 	mvnmi	r3, r3, lsl #30
+c018b998:	41e03f23 	mvnmi	r3, r3, lsr #30
+c018b99c:	42833001 	addmi	r3, r3, #1
+c018b9a0:	e584308c 	str	r3, [r4, #140]	@ 0x8c
+c018b9a4:	e1a0185a 	asr	r1, sl, r8
+c018b9a8:	e599004c 	ldr	r0, [r9, #76]	@ 0x4c
+c018b9ac:	e2011001 	and	r1, r1, #1
+c018b9b0:	e2888001 	add	r8, r8, #1
+c018b9b4:	ebfa1e28 	bl	c001325c <ak_gpio_setpin>
+c018b9b8:	e3580004 	cmp	r8, #4
+c018b9bc:	e2899004 	add	r9, r9, #4
+c018b9c0:	1afffff7 	bne	c018b9a4 <ak_motor_hw_timer_handler+0x110>
+c018b9c4:	e5943084 	ldr	r3, [r4, #132]	@ 0x84
+c018b9c8:	e2433001 	sub	r3, r3, #1
+c018b9cc:	e5843084 	str	r3, [r4, #132]	@ 0x84
+c018b9d0:	e5843088 	str	r3, [r4, #136]	@ 0x88
+c018b9d4:	e5943080 	ldr	r3, [r4, #128]	@ 0x80
+c018b9d8:	e3530000 	cmp	r3, #0
+c018b9dc:	e5953020 	ldr	r3, [r5, #32]
+c018b9e0:	12433001 	subne	r3, r3, #1
+c018b9e4:	11c33fc3 	bicne	r3, r3, r3, asr #31
+c018b9e8:	1a000003 	bne	c018b9fc <ak_motor_hw_timer_handler+0x168>
+c018b9ec:	e595202c 	ldr	r2, [r5, #44]	@ 0x2c
+c018b9f0:	e2833001 	add	r3, r3, #1
+c018b9f4:	e1530002 	cmp	r3, r2
+c018b9f8:	a2423001 	subge	r3, r2, #1
+c018b9fc:	e5853020 	str	r3, [r5, #32]
+c018ba00:	e5951020 	ldr	r1, [r5, #32]
+c018ba04:	e595202c 	ldr	r2, [r5, #44]	@ 0x2c
+c018ba08:	e5953028 	ldr	r3, [r5, #40]	@ 0x28
+c018ba0c:	e59f0038 	ldr	r0, [pc, #56]	@ c018ba4c <ak_motor_hw_timer_handler+0x1b8>
+c018ba10:	eb05ae08 	bl	c02f7238 <printk>
+c018ba14:	e121f006 	msr	CPSR_c, r6
+c018ba18:	ea000007 	b	c018ba3c <ak_motor_hw_timer_handler+0x1a8>
+c018ba1c:	e3a03003 	mov	r3, #3
+c018ba20:	e5843090 	str	r3, [r4, #144]	@ 0x90
+c018ba24:	e121f006 	msr	CPSR_c, r6
+c018ba28:	e594007c 	ldr	r0, [r4, #124]	@ 0x7c
+c018ba2c:	ebfa20c7 	bl	c0013d50 <ak39_timer_stop>
+c018ba30:	e3a07000 	mov	r7, #0
+c018ba34:	ea000000 	b	c018ba3c <ak_motor_hw_timer_handler+0x1a8>
+c018ba38:	e1a07005 	mov	r7, r5
+c018ba3c:	e1a00007 	mov	r0, r7
+c018ba40:	e89daff8 	ldm	sp, {r3, r4, r5, r6, r7, r8, r9, sl, fp, sp, pc}
+c018ba44:	c0391a77 	eorsgt	r1, r9, r7, ror sl
+c018ba48:	c0310cfc 	ldrshtgt	r0, [r1], -ip
+c018ba4c:	c0391a95 	mlasgt	r9, r5, sl, r1
+
+c018ba50 <efuse_read_id>:
+c018ba50:	e1a0c00d 	mov	ip, sp
+c018ba54:	e92dd878 	push	{r3, r4, r5, r6, fp, ip, lr, pc}
+c018ba58:	e24cb004 	sub	fp, ip, #4
+c018ba5c:	e59f4094 	ldr	r4, [pc, #148]	@ c018baf8 <efuse_read_id+0xa8>
+c018ba60:	e1a06000 	mov	r6, r0
+c018ba64:	e59430a0 	ldr	r3, [r4, #160]	@ 0xa0
+c018ba68:	e3a00f4b 	mov	r0, #300	@ 0x12c
+c018ba6c:	e3833302 	orr	r3, r3, #134217728	@ 0x8000000
+c018ba70:	e58430a0 	str	r3, [r4, #160]	@ 0xa0
+c018ba74:	e594309c 	ldr	r3, [r4, #156]	@ 0x9c
+c018ba78:	e1a05001 	mov	r5, r1
+c018ba7c:	e3833006 	orr	r3, r3, #6
+c018ba80:	e584309c 	str	r3, [r4, #156]	@ 0x9c
+c018ba84:	e594309c 	ldr	r3, [r4, #156]	@ 0x9c
+c018ba88:	e3c33009 	bic	r3, r3, #9
+c018ba8c:	e584309c 	str	r3, [r4, #156]	@ 0x9c
+c018ba90:	e59430a0 	ldr	r3, [r4, #160]	@ 0xa0
+c018ba94:	e3c33001 	bic	r3, r3, #1
+c018ba98:	e58430a0 	str	r3, [r4, #160]	@ 0xa0
+c018ba9c:	ebfa5cbd 	bl	c0022d98 <msleep>
+c018baa0:	e594208c 	ldr	r2, [r4, #140]	@ 0x8c
+c018baa4:	e59f304c 	ldr	r3, [pc, #76]	@ c018baf8 <efuse_read_id+0xa8>
+c018baa8:	e3520000 	cmp	r2, #0
+c018baac:	bafffffb 	blt	c018baa0 <efuse_read_id+0x50>
+c018bab0:	e593208c 	ldr	r2, [r3, #140]	@ 0x8c
+c018bab4:	e3822102 	orr	r2, r2, #-2147483648	@ 0x80000000
+c018bab8:	e583208c 	str	r2, [r3, #140]	@ 0x8c
+c018babc:	e594308c 	ldr	r3, [r4, #140]	@ 0x8c
+c018bac0:	e59f2030 	ldr	r2, [pc, #48]	@ c018baf8 <efuse_read_id+0xa8>
+c018bac4:	e3530000 	cmp	r3, #0
+c018bac8:	bafffffb 	blt	c018babc <efuse_read_id+0x6c>
+c018bacc:	e5923090 	ldr	r3, [r2, #144]	@ 0x90
+c018bad0:	e3a00000 	mov	r0, #0
+c018bad4:	e1a01803 	lsl	r1, r3, #16
+c018bad8:	e1a01821 	lsr	r1, r1, #16
+c018badc:	e1a03823 	lsr	r3, r3, #16
+c018bae0:	e5861000 	str	r1, [r6]
+c018bae4:	e5853000 	str	r3, [r5]
+c018bae8:	e5922094 	ldr	r2, [r2, #148]	@ 0x94
+c018baec:	e1833802 	orr	r3, r3, r2, lsl #16
+c018baf0:	e5853000 	str	r3, [r5]
+c018baf4:	e89da878 	ldm	sp, {r3, r4, r5, r6, fp, sp, pc}
+c018baf8:	f0008000 			@ <UNDEFINED> instruction: 0xf0008000
+
+c018bafc <sn_store>:
+c018bafc:	e1a0c00d 	mov	ip, sp

@@ -1,0 +1,149 @@
+RECOVERY KIT — YI CB211 / AK3918EN088 V200 (192.168.1.103)
+==========================================================
+Written: 2026-10-25 10:25 host time (board clock 1970-01-01 00:04, no RTC)
+Author: automated agent, via telnet :2323 + busybox cp. Nothing was flashed.
+
+WHY THIS EXISTS
+  /mnt/Factory is the whole application (service.sh runs config.sh instead of
+  anyka_ipc.sh when an SD card holds a directory named Factory). That app exists
+  ONLY on the SD card. On 2026-10-24 an accidental card pull truncated four files
+  to 0 bytes. The host has a full tar of the card
+  (backups/factory-sd-2026-10-24.tar, 78 entries) but that is useless if the card
+  dies and the host note is all that is left.
+  /data is mtd6, a real JFFS2 partition inside the flash: it survives the card
+  being removed, dead, or replaced.
+
+WHAT THIS IS NOT
+  Not a mirror. /data has 388 kB free after this kit (jffs2 mtd6: 504 kB free
+  before, 1828/2216 kB used after), so
+  only the files needed to bring the camera back with video + sound + correct
+  day/night behaviour are here. Everything else (lib/, ptz_daemon, onvif, irctl,
+  motorctl, led, ispconf, web_interface, isp_sc1346.conf, the other ~20 .pcm
+  test tones) is deliberately absent — restore those from the tar on the host.
+
+LAYOUT (plain cp-able; relative paths match /mnt/Factory)
+  /data/recovery/config.sh                          -> /mnt/Factory/config.sh
+  /data/recovery/custom/rtsp                        -> /mnt/Factory/custom/rtsp
+  /data/recovery/custom/lib/libplat_drv.so          -> /mnt/Factory/custom/lib/libplat_drv.so
+  /data/recovery/custom/beep                        -> /mnt/Factory/custom/beep
+  /data/recovery/custom/quiet-cue.sh                -> /mnt/Factory/custom/quiet-cue.sh
+  /data/recovery/custom/audio/cue.pcm               -> /mnt/Factory/custom/audio/cue.pcm
+  /data/recovery/custom/audio/warn.pcm              -> /mnt/Factory/custom/audio/warn.pcm
+  /data/recovery/custom/audio/alarm.pcm             -> /mnt/Factory/custom/audio/alarm.pcm
+
+EXPECTED SHA256 (all mode 0755; total 93394 bytes)
+  c0d13ddbea6b85d6ab51c2e8efdb441735053936f2b05fe7895f405b4456f3c7  config.sh                         1603 B
+  fb375089d8b6c1ecce4a16d7fa6db7df66337faef53503249669dcd2c77e1c6b  custom/rtsp                      20949 B
+  cdbd35a321c0baf938aae42225b9685337b0639c73085b69fcbc22680c0dcafe  custom/lib/libplat_drv.so         26594 B
+  3fc3c2c1ebd1db28860e3d0e39411b08e3195b89999a46d9fe021b9716be0259  custom/beep                        956 B
+  cea9d54cf127a9cfc06f761ce5dbb68ee69e28bb2be372f3bb215259c7ed510f  custom/quiet-cue.sh               4332 B
+  3ba709894b1b7b5b71ebb2f239e77cee8b2c1db0d49db8540ea1420dfb0ef06b  custom/audio/cue.pcm             11520 B
+  67cc91f1785f9586d0755bf78c9ef69abaff84ea4d9cdcd6d1b743a78cccc39d  custom/audio/warn.pcm            13760 B
+  4fea39a350a21cdaa3a923a32398d060ab6a06e26297c7d669e5589ccb9d0060  custom/audio/alarm.pcm           23680 B
+
+VERIFY THE KIT (run on the board)
+  cd /data/recovery && sha256sum config.sh custom/rtsp custom/lib/libplat_drv.so \
+    custom/beep custom/quiet-cue.sh custom/audio/*.pcm
+  compare with the table above. Any 0-byte file or mismatch = the copy is bad,
+  do not restore from it.
+
+FULL RESTORE (card present but the app is damaged / truncated)
+  # 1. keep what is there, never destroy evidence
+  cd /mnt/Factory && mkdir -p /mnt/Factory.broken && cp -a config.sh custom /mnt/Factory.broken/ 2>/dev/null
+  # 2. copy the kit back over the top (cp -p keeps modes)
+  cd /data/recovery
+  cp -p config.sh                    /mnt/Factory/config.sh
+  cp -p custom/rtsp                  /mnt/Factory/custom/rtsp
+  cp -p custom/lib/libplat_drv.so    /mnt/Factory/custom/lib/libplat_drv.so
+  cp -p custom/beep                  /mnt/Factory/custom/beep
+  cp -p custom/quiet-cue.sh          /mnt/Factory/custom/quiet-cue.sh
+  mkdir -p /mnt/Factory/custom/audio
+  cp -p custom/audio/cue.pcm custom/audio/warn.pcm custom/audio/alarm.pcm /mnt/Factory/custom/audio/
+  # 3. check, then restart the stream (config.sh does this on the next boot)
+  cd /mnt/Factory && sha256sum config.sh custom/rtsp custom/lib/libplat_drv.so \
+    custom/beep custom/quiet-cue.sh custom/audio/*.pcm
+  sh -n config.sh && echo config syntax ok
+  kill $(pidof rtsp) 2>/dev/null; sleep 2
+  cd /mnt/Factory/custom && LD_LIBRARY_PATH=/mnt/Factory/custom/lib nohup ./rtsp >/tmp/rtsp.log 2>&1 &
+  # then: rtsp://192.168.1.103:554/vs0 (1280x720) and /vs1 (640x480)
+
+SINGLE FILE
+  cp -p /data/recovery/<same relative path> /mnt/Factory/<same relative path>
+
+CARD IS DEAD: HOW TO GET A SHELL FIRST
+  With no SD app the board boots the stock application; service.sh KILLS telnetd
+  in that branch, so there is no :2323 and no :8080. To reach this kit you need
+  either the serial console (ttySAK0, 115200) or any SD card holding a minimal
+  /mnt/Factory/config.sh that just brings up the network and telnet:
+
+    #!/bin/sh
+    ifconfig wlan0 192.168.1.103 netmask 255.255.255.0 up   # or your net_manage.sh
+    /bin/busybox telnetd -p 2323
+
+  Then telnet in and run the FULL RESTORE above. The kit needs no /etc/jffs2
+  space (52/64 kB used there) and no host: /data and /mnt are both on the board.
+
+TWO FILES ARE PATCHED — DO NOT "FIX" THEM BACK
+  custom/rtsp (20949 B, sha fb375089...) and custom/lib/libplat_drv.so
+  (26594 B, sha cdbd35a3...) are the day/night builds: four same-length .rodata
+  string slots changed, code byte-identical.
+    libplat_drv.so  0x33bb gpio-rf_feed -> /tmp/photo
+                    0x3473 gpio-ircut_a -> ircut_a
+                    0x348f gpio-ircut_b -> ircut_b
+    rtsp            0x1d18 gpio-ircut_a -> ircut_a
+  Without them the driver's photo-sensor read fails ("[ak_drv_ir_get_input_level:129]
+  not inited", errno 6) and rtsp never switches ISP mode: night frames come out
+  violet (RGB ~165,161,242) and the IR filter never moves.
+  The stock originals are next to them on the card as
+  /mnt/Factory/custom/rtsp.stock (sha 7cbce393...) and
+  /mnt/Factory/custom/lib/libplat_drv.so.stock (sha 383d7d71...) — use those only
+  to go back to stock behaviour, not as a repair.
+  Day/night is then driven at runtime by /tmp/photo: "0\n" = day, "1\n" = night.
+  absent = day (the boot default). rtsp's 5 s thread applies ircut + IR LED +
+  ISP scene within ~5 s; no reboot needed. -- it is a tmpfs file, so it must be
+  re-created after every boot.
+
+OTHER STATE THE APP NEEDS (check after any restore)
+  - /etc/jffs2/styleId MUST NOT EXIST (52/64 kB used there, keep it that way).
+    The stock styleId was the string "48", read as the single byte 0x34 = 52,
+    which failed the ISP conf check -> "read sensor fail" -> no video at all.
+    Deleting it made the sensor match and frames flow. Do not re-create it.
+  - /mnt/Factory/custom/lib must contain the 18 stock .so files (libplat_vi,
+    libakispsdk, libplat_drv ...); they are in the host tar, not in this kit.
+    rtsp is started with LD_LIBRARY_PATH=/mnt/Factory/custom/lib.
+  - config.sh expects custom/sensor/isp_sc1346.conf (104574 B) and the
+    custom/audio/*.pcm cues; isp_sc1346.conf is not in this kit (it is on the
+    card, and in the tar).
+  - audio: the amp is active-low, the AK3918 driver sets SPK_PA=1 (mute) during
+    playback, so quiet-cue.sh holds SPK_PA=0 every 50 ms while ak_adec_demo
+    plays. Playing ak_adec_demo directly is silent. Levels are in the file:
+    cue = -40 dBFS (comfortable), warn = -30, alarm = -20 (emergency only).
+    quiet-cue.sh (4332 B version) sizes its keeper from the file's own length:
+    SECS = ceil(bytes/(RATE*CH*2)) + 2, hard cap 120 s, ITERS = SECS*20
+    (20 x 50 ms per second, deliberately longer than the audio) plus a
+    wall-clock ceiling from /proc/uptime, instead of the old flat 10 s, so a
+    long sound no longer loses the amp mid-play.
+    A cue must NEVER be steady-on: the previous 4014 B version switched
+    WHITE_LED on for the whole length of the play (a 62 s file = a minute of
+    white lamp glaring at the camera's own subject). The 4332 B version deletes
+    the lamp writes outright -- it writes no WHITE_LED, no IR_LED and calls no
+    /mnt/Factory/custom/led at all. Do not re-introduce it; if a visual cue is
+    ever wanted again, use a short blink, never a hold. Note that on the card
+    /mnt/Factory/custom/led is currently led.frozen (non-executable) on
+    purpose, so a script that calls it must tolerate it being absent.
+  - config.sh (1603 B version) starts dark: it writes "0\n" to /tmp/photo and
+    IR_LED=0, WHITE_LED=0 before net_manage.sh, because with /tmp/photo absent
+    the driver falls back to /sys/kernel/ain/ain0 (~1171, not a light sensor),
+    decides "night" and turns the IR illuminator on ~5 s after rtsp starts.
+    Keep those three lines when editing config.sh; without them the board boots
+    with the red glow and white LED on.
+
+WRITTEN BY
+  tools/cam (telnet) + busybox cp + sha256sum, one file at a time, source hashed
+  on /mnt and target hashed on /data; every pair matched before RESTORE.txt was
+  written. Two of the sources (config.sh, quiet-cue.sh) were copied last because
+  another agent was editing them; quiet-cue.sh changed three times during the
+  job (1817 -> 4014 -> 4650 -> 4332 B) and was re-copied and re-hashed after
+  each change. The hashes above are the settled versions, verified against the
+  card a final time after that agent finished. If you edit any of these files
+  later, this kit is stale for that file -- re-copy it and update its line.

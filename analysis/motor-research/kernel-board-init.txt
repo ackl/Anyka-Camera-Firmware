@@ -1,0 +1,135 @@
+
+analysis/motor-research/kernel.elf:     file format elf32-littlearm
+
+
+Disassembly of section .kernel:
+
+c03d2d00 <ak39xx_init_clocks+0x150>:
+c03d2d00:	ebfc914c 	bl	c02f7238 <printk>
+c03d2d04:	e59f00b0 	ldr	r0, [pc, #176]	@ c03d2dbc <ak39xx_init_clocks+0x20c>
+c03d2d08:	ebf0fd66 	bl	c00122a8 <ak39xx_register_clock>
+c03d2d0c:	e3500000 	cmp	r0, #0
+c03d2d10:	aa000001 	bge	c03d2d1c <ak39xx_init_clocks+0x16c>
+c03d2d14:	e59f00a4 	ldr	r0, [pc, #164]	@ c03d2dc0 <ak39xx_init_clocks+0x210>
+c03d2d18:	ebfc9146 	bl	c02f7238 <printk>
+c03d2d1c:	e59f00a0 	ldr	r0, [pc, #160]	@ c03d2dc4 <ak39xx_init_clocks+0x214>
+c03d2d20:	ebf0fd60 	bl	c00122a8 <ak39xx_register_clock>
+c03d2d24:	e3500000 	cmp	r0, #0
+c03d2d28:	aa000001 	bge	c03d2d34 <ak39xx_init_clocks+0x184>
+c03d2d2c:	e59f0094 	ldr	r0, [pc, #148]	@ c03d2dc8 <ak39xx_init_clocks+0x218>
+c03d2d30:	ebfc9140 	bl	c02f7238 <printk>
+c03d2d34:	e59f0090 	ldr	r0, [pc, #144]	@ c03d2dcc <ak39xx_init_clocks+0x21c>
+c03d2d38:	ebf0fd5a 	bl	c00122a8 <ak39xx_register_clock>
+c03d2d3c:	e3500000 	cmp	r0, #0
+c03d2d40:	aa000001 	bge	c03d2d4c <ak39xx_init_clocks+0x19c>
+c03d2d44:	e59f0084 	ldr	r0, [pc, #132]	@ c03d2dd0 <ak39xx_init_clocks+0x220>
+c03d2d48:	ebfc913a 	bl	c02f7238 <printk>
+c03d2d4c:	e59f0080 	ldr	r0, [pc, #128]	@ c03d2dd4 <ak39xx_init_clocks+0x224>
+c03d2d50:	ebf0fd54 	bl	c00122a8 <ak39xx_register_clock>
+c03d2d54:	e3500000 	cmp	r0, #0
+c03d2d58:	aa000001 	bge	c03d2d64 <ak39xx_init_clocks+0x1b4>
+c03d2d5c:	e59f0074 	ldr	r0, [pc, #116]	@ c03d2dd8 <ak39xx_init_clocks+0x228>
+c03d2d60:	ebfc9134 	bl	c02f7238 <printk>
+c03d2d64:	e59f0070 	ldr	r0, [pc, #112]	@ c03d2ddc <ak39xx_init_clocks+0x22c>
+c03d2d68:	e3a01017 	mov	r1, #23
+c03d2d6c:	ebffff7c 	bl	c03d2b64 <ak39xx_register_clocks>
+c03d2d70:	e3a00000 	mov	r0, #0
+c03d2d74:	e89da8f0 	ldm	sp, {r4, r5, r6, r7, fp, sp, pc}
+c03d2d78:	c03f5554 	eorsgt	r5, pc, r4, asr r5	@ <UNPREDICTABLE>
+c03d2d7c:	000f4240 	andeq	r4, pc, r0, asr #4
+c03d2d80:	c037cfd7 	ldrsbtgt	ip, [r7], -r7
+c03d2d84:	c037d009 	eorsgt	sp, r7, r9
+c03d2d88:	c03f57b8 	ldrhtgt	r5, [pc], -r8
+c03d2d8c:	c037d029 	eorsgt	sp, r7, r9, lsr #32
+c03d2d90:	c03f57fc 	ldrshtgt	r5, [pc], -ip
+c03d2d94:	c037d049 	eorsgt	sp, r7, r9, asr #32
+c03d2d98:	c037d069 	eorsgt	sp, r7, r9, rrx
+c03d2d9c:	c03f5598 	mlasgt	pc, r8, r5, r5	@ <UNPREDICTABLE>
+c03d2da0:	c037d08c 	eorsgt	sp, r7, ip, lsl #1
+c03d2da4:	c03f55dc 	ldrsbtgt	r5, [pc], -ip
+c03d2da8:	c037d0b0 	ldrhtgt	sp, [r7], -r0
+c03d2dac:	c03f5620 	eorsgt	r5, pc, r0, lsr #12
+c03d2db0:	c037d0d4 	ldrsbtgt	sp, [r7], -r4
+c03d2db4:	c03f5664 	eorsgt	r5, pc, r4, ror #12
+c03d2db8:	c037d0f3 	ldrshtgt	sp, [r7], -r3
+c03d2dbc:	c03f56a8 	eorsgt	r5, pc, r8, lsr #13
+c03d2dc0:	c037d112 	eorsgt	sp, r7, r2, lsl r1
+c03d2dc4:	c03f56ec 	eorsgt	r5, pc, ip, ror #13
+c03d2dc8:	c037d134 	eorsgt	sp, r7, r4, lsr r1
+c03d2dcc:	c03f5730 	eorsgt	r5, pc, r0, lsr r7	@ <UNPREDICTABLE>
+c03d2dd0:	c037d150 	eorsgt	sp, r7, r0, asr r1
+c03d2dd4:	c03f5840 	eorsgt	r5, pc, r0, asr #16
+c03d2dd8:	c037d170 	eorsgt	sp, r7, r0, ror r1
+c03d2ddc:	c03f5884 	eorsgt	r5, pc, r4, lsl #17
+
+c03d2de0 <ak3918_init_machine>:
+c03d2de0:	e1a0c00d 	mov	ip, sp
+c03d2de4:	e92dd818 	push	{r3, r4, fp, ip, lr, pc}
+c03d2de8:	e24cb004 	sub	fp, ip, #4
+c03d2dec:	e59f40b0 	ldr	r4, [pc, #176]	@ c03d2ea4 <ak3918_init_machine+0xc4>
+c03d2df0:	ebf10221 	bl	c001367c <adc1_init>
+c03d2df4:	e1a00004 	mov	r0, r4
+c03d2df8:	e3a01001 	mov	r1, #1
+c03d2dfc:	ebfc8900 	bl	c02f5204 <spi_register_board_info>
+c03d2e00:	e59f30a0 	ldr	r3, [pc, #160]	@ c03d2ea8 <ak3918_init_machine+0xc8>
+c03d2e04:	e2842038 	add	r2, r4, #56	@ 0x38
+c03d2e08:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e0c:	e59f3098 	ldr	r3, [pc, #152]	@ c03d2eac <ak3918_init_machine+0xcc>
+c03d2e10:	e2842060 	add	r2, r4, #96	@ 0x60
+c03d2e14:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e18:	e59f3090 	ldr	r3, [pc, #144]	@ c03d2eb0 <ak3918_init_machine+0xd0>
+c03d2e1c:	e28420b8 	add	r2, r4, #184	@ 0xb8
+c03d2e20:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e24:	e59f3088 	ldr	r3, [pc, #136]	@ c03d2eb4 <ak3918_init_machine+0xd4>
+c03d2e28:	e2842e11 	add	r2, r4, #272	@ 0x110
+c03d2e2c:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e30:	e59f3080 	ldr	r3, [pc, #128]	@ c03d2eb8 <ak3918_init_machine+0xd8>
+c03d2e34:	e2842e16 	add	r2, r4, #352	@ 0x160
+c03d2e38:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e3c:	e59f3078 	ldr	r3, [pc, #120]	@ c03d2ebc <ak3918_init_machine+0xdc>
+c03d2e40:	e2842e1b 	add	r2, r4, #432	@ 0x1b0
+c03d2e44:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e48:	e59f3070 	ldr	r3, [pc, #112]	@ c03d2ec0 <ak3918_init_machine+0xe0>
+c03d2e4c:	e2842f6d 	add	r2, r4, #436	@ 0x1b4
+c03d2e50:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e54:	e59f3068 	ldr	r3, [pc, #104]	@ c03d2ec4 <ak3918_init_machine+0xe4>
+c03d2e58:	e2842f7a 	add	r2, r4, #488	@ 0x1e8
+c03d2e5c:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e60:	e59f3060 	ldr	r3, [pc, #96]	@ c03d2ec8 <ak3918_init_machine+0xe8>
+c03d2e64:	e2842e21 	add	r2, r4, #528	@ 0x210
+c03d2e68:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e6c:	e59f3058 	ldr	r3, [pc, #88]	@ c03d2ecc <ak3918_init_machine+0xec>
+c03d2e70:	e2842f86 	add	r2, r4, #536	@ 0x218
+c03d2e74:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e78:	e59f3050 	ldr	r3, [pc, #80]	@ c03d2ed0 <ak3918_init_machine+0xf0>
+c03d2e7c:	e2842f8d 	add	r2, r4, #564	@ 0x234
+c03d2e80:	e5832050 	str	r2, [r3, #80]	@ 0x50
+c03d2e84:	e59f3048 	ldr	r3, [pc, #72]	@ c03d2ed4 <ak3918_init_machine+0xf4>
+c03d2e88:	e2844f8f 	add	r4, r4, #572	@ 0x23c
+c03d2e8c:	e3a01012 	mov	r1, #18
+c03d2e90:	e59f0040 	ldr	r0, [pc, #64]	@ c03d2ed8 <ak3918_init_machine+0xf8>
+c03d2e94:	e5834050 	str	r4, [r3, #80]	@ 0x50
+c03d2e98:	ebf6b7bc 	bl	c0180d90 <platform_add_devices>
+c03d2e9c:	eb00000e 	bl	c03d2edc <l2_init>
+c03d2ea0:	e89da818 	ldm	sp, {r3, r4, fp, sp, pc}
+c03d2ea4:	c03f8300 	eorsgt	r8, pc, r0, lsl #6
+c03d2ea8:	c03f6cb0 	ldrhtgt	r6, [pc], -r0
+c03d2eac:	c03f6178 	eorsgt	r6, pc, r8, ror r1	@ <UNPREDICTABLE>
+c03d2eb0:	c03f6098 	mlasgt	pc, r8, r0, r6	@ <UNPREDICTABLE>
+c03d2eb4:	c03f73b8 	ldrhtgt	r7, [pc], -r8
+c03d2eb8:	c03f72a0 	eorsgt	r7, pc, r0, lsr #5
+c03d2ebc:	c03f5f80 	eorsgt	r5, pc, r0, lsl #31
+c03d2ec0:	c03f6ee0 	eorsgt	r6, pc, r0, ror #29
+c03d2ec4:	c03f6dc8 	eorsgt	r6, pc, r8, asr #27
+c03d2ec8:	c03f68e8 	eorsgt	r6, pc, r8, ror #17
+c03d2ecc:	c03f6728 	eorsgt	r6, pc, r8, lsr #14
+c03d2ed0:	c03f6bb0 	ldrhtgt	r6, [pc], -r0
+c03d2ed4:	c03f5ea0 	eorsgt	r5, pc, r0, lsr #29
+c03d2ed8:	c03e5614 	eorsgt	r5, lr, r4, lsl r6
+
+c03d2edc <l2_init>:
+c03d2edc:	e1a0c00d 	mov	ip, sp
+c03d2ee0:	e92dd870 	push	{r4, r5, r6, fp, ip, lr, pc}
+c03d2ee4:	e24cb004 	sub	fp, ip, #4
+c03d2ee8:	e24dd00c 	sub	sp, sp, #12
+c03d2eec:	e59f30c4 	ldr	r3, [pc, #196]	@ c03d2fb8 <l2_init+0xdc>

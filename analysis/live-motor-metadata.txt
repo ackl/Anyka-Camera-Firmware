@@ -1,0 +1,62 @@
+
+~ # 
+echo --processes--; ps | grep -E 'ptz|anyka|telnet' ; echo --modules--; cat 
+/proc/modules; echo --devices--; cat /proc/devices; ls -l /dev/ak-motor*; echo -
+-sysfs--; ls -l /sys/class/misc; echo --owners--; for p in /proc/[0-9]*; do for 
+f in $p/fd/*; do t=$(readlink $f); case $t in *ak-motor*) echo $p $f $t;; esac; 
+done; done; echo INSPECTION_DONE
+--processes--
+  443 root       0:00 /mnt/Factory/custom/busybox telnetd -p 2323 -l /bin/sh
+  458 root       0:00 /mnt/Factory/custom/ptz_daemon
+ 3091 root       0:00 grep -E ptz|anyka|telnet
+--modules--
+atbm6031x 845819 0 - Live 0xbf011000 (O)
+ak_info_dump 1227 0 - Live 0xbf00d000
+akcamera 14136 2 ak_info_dump, Live 0xbf005000
+sensor_sc1346 4420 0 - Live 0xbf000000 (O)
+--devices--
+Character devices:
+  1 mem
+  5 /dev/tty
+  5 /dev/console
+  5 /dev/ptmx
+  5 ttyprintk
+ 10 misc
+ 13 input
+ 81 video4linux
+ 90 mtd
+128 ptm
+136 pts
+180 usb
+189 usb_device
+204 ttySAK
+251 atbm_ioctl
+252 uio
+253 pcmchar
+254 rtc
+
+Block devices:
+  1 ramdisk
+259 blkext
+  7 loop
+ 31 mtdblock
+179 mmc
+crw-rw----    1 root     root       10,  61 Jan  1 00:00 [1;35m/dev/ak-motor0[0m
+crw-rw----    1 root     root       10,  60 Jan  1 00:00 [1;35m/dev/ak-motor1[0m
+--sysfs--
+total 0
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36mak-motor0[0m -> [1;34m../../devices/virtual/misc/ak-motor0[0m
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36mak-motor1[0m -> [1;34m../../devices/virtual/misc/ak-motor1[0m
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36mcpu_dma_latency[0m -> [1;34m../../devices/virtual/misc/cpu_dma_latency[0m
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36mion[0m -> [1;34m../../devices/virtual/misc/ion[0m
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36misp_char[0m -> [1;34m../../devices/virtual/misc/isp_char[0m
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36mloop-control[0m -> [1;34m../../devices/virtual/misc/loop-control[0m
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36mnetwork_latency[0m -> [1;34m../../devices/virtual/misc/network_latency[0m
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36mnetwork_throughput[0m -> [1;34m../../devices/virtual/misc/network_throughput[0m
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36mrfkill[0m -> [1;34m../../devices/virtual/misc/rfkill[0m
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36mwatchdog[0m -> [1;34m../../devices/virtual/misc/watchdog[0m
+--owners--
+/proc/458 /proc/458/fd/3 /dev/ak-motor0
+/proc/458 /proc/458/fd/4 /dev/ak-motor1
+INSPECTION_DONE
+~ # 

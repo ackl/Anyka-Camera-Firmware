@@ -1,0 +1,895 @@
+[
+  {
+    "path": "data/audio_file/err_language",
+    "size": 3,
+    "sha256": "2697952c58a363373b4f7b4b76a5e527a83e281e6e316fcc1740bb56ae076e5b"
+  },
+  {
+    "path": "data/audio_file/language/1.aac",
+    "size": 7729,
+    "sha256": "09e30c24f9a168e5734ddcb2fe3f2c6d97f913a916f6eda2a972fb4818ff4dba"
+  },
+  {
+    "path": "data/audio_file/language/10.aac",
+    "size": 3882,
+    "sha256": "516ded86192af1c1568f67818d879a43489ab9e38db0e3316ca9c4b000029c1c"
+  },
+  {
+    "path": "data/audio_file/language/1001.aac",
+    "size": 10316,
+    "sha256": "6e3a7ce5c35013c43e118cb2b5ff4a17ceb3715c799c8297b57ae64cbf2fe951"
+  },
+  {
+    "path": "data/audio_file/language/1002.aac",
+    "size": 8521,
+    "sha256": "714db86725e592b023a4060ba7e0cb9ae54ceac428120c6ff1d130ecd1004781"
+  },
+  {
+    "path": "data/audio_file/language/11.aac",
+    "size": 10916,
+    "sha256": "ff0ad98b26175107bc597800fb8f47356c76cc67bf1e2810113df8f5969ad580"
+  },
+  {
+    "path": "data/audio_file/language/12.aac",
+    "size": 7612,
+    "sha256": "cd857b9aae083ebe5deb2ee7e5b77787362378892fe3b74b83415b9063d2ebe9"
+  },
+  {
+    "path": "data/audio_file/language/13.aac",
+    "size": 10838,
+    "sha256": "2cca9d39c5ff80c13af6800fd60f8f04af04fb5fdc2a362266f185e4951d4819"
+  },
+  {
+    "path": "data/audio_file/language/14.aac",
+    "size": 11605,
+    "sha256": "1a97697bf7850fc751504ca852252e985a8bca045f75c5ad0bb9f48b84033c01"
+  },
+  {
+    "path": "data/audio_file/language/15.aac",
+    "size": 11799,
+    "sha256": "0060b81839984fe072d38245480834c494ab9a8067ef85cea0d38fd117b5fb33"
+  },
+  {
+    "path": "data/audio_file/language/16.aac",
+    "size": 7969,
+    "sha256": "2883eee843b72a96a6586a18d4e51d39459214716b7cb0955b3ab46d70be217b"
+  },
+  {
+    "path": "data/audio_file/language/17.aac",
+    "size": 9160,
+    "sha256": "f050171253eb38fbb8d5fb9fede5e043b37b901e58c1447391b1eff95618475d"
+  },
+  {
+    "path": "data/audio_file/language/2.aac",
+    "size": 34797,
+    "sha256": "14b0160e12d7c021d331adcf8109ab9592f402604abcc4b36029b95c23520955"
+  },
+  {
+    "path": "data/audio_file/language/27.aac",
+    "size": 20093,
+    "sha256": "2eb7a199368468a53bf6eb82f473de89da70f85e89908412dfc01255e0f3ab98"
+  },
+  {
+    "path": "data/audio_file/language/28.aac",
+    "size": 1928,
+    "sha256": "79c3d1faad5c850424e6550725ee72c8eac846fad1a91f5cf11c6da570147933"
+  },
+  {
+    "path": "data/audio_file/language/29.aac",
+    "size": 17152,
+    "sha256": "0e3379ccec3eecc18a76152b727198c4d435f9c1eaef8756313945f5b99b07f7"
+  },
+  {
+    "path": "data/audio_file/language/3.aac",
+    "size": 8550,
+    "sha256": "2b5121531f2987aa54eabdb44caac4998b116d82cd145cf1171f278f4276bff5"
+  },
+  {
+    "path": "data/audio_file/language/33.aac",
+    "size": 14390,
+    "sha256": "e0aa92d7d3cbc5288c6840654a757bfa3fea3d545b3ae0e752cbe57ea9e61845"
+  },
+  {
+    "path": "data/audio_file/language/34.aac",
+    "size": 20727,
+    "sha256": "5264a00751e19818a0b6aaa520fdc5f4edfb7526f25892c1d62934ee8ec0cff4"
+  },
+  {
+    "path": "data/audio_file/language/4.aac",
+    "size": 12339,
+    "sha256": "1a5c4ef2417cb0d85fa9bb0c75ca5175c92c6ee032fd0209a3b33856d35644f9"
+  },
+  {
+    "path": "data/audio_file/language/7.aac",
+    "size": 25213,
+    "sha256": "ef11875426e9b8326a4a806af8267546d6ed05490e1912ac650adb711e910bc8"
+  },
+  {
+    "path": "data/audio_file/language/8.aac",
+    "size": 27529,
+    "sha256": "687affc68d4c770dead8b60fb195e0128a6fa7411d24cdad6d55028a6afd3628"
+  },
+  {
+    "path": "data/audio_file/language/9.aac",
+    "size": 17694,
+    "sha256": "03cc89608c822b765c4b9df08844536b7790a126767f995b6cdd851fc1f60555"
+  },
+  {
+    "path": "data/audio_file/language.conf",
+    "size": 12,
+    "sha256": "671458c64e33138c3ef6ead97727d086a61985f943f0916669fb1c7498057ed3"
+  },
+  {
+    "path": "data/factory_is_not_ok",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "data/wifi_driver.sh",
+    "size": 13704,
+    "sha256": "9f108f35e8b1dd8e69c95caffb3e23ed938e3874ec240aefc4cd4f6b31b4e181"
+  },
+  {
+    "path": "data/wifi_driver.tgz",
+    "size": 321227,
+    "sha256": "8f5ca660dc18c3f07ee03cb13ad0f85b0c8139f912dd74c5f13a75b796a37288"
+  },
+  {
+    "path": "data/wifi_station.sh",
+    "size": 13242,
+    "sha256": "1171ab10925f0532b9dad13d8bf4c31fdad7ee7645d3f0205d7a89a0e4ce22d1"
+  },
+  {
+    "path": "data/wifi_tool.tgz",
+    "size": 689808,
+    "sha256": "634f81ca19e80f0b6a2b85123f46574c35a330ed093851baffe68d1d647fcf2b"
+  },
+  {
+    "path": "etc/fstab",
+    "size": 823,
+    "sha256": "c5930c81aa6167c8e40c7a5de2e500ffb4a8682acdba467788d67a236f0da73e"
+  },
+  {
+    "path": "etc/group",
+    "size": 46,
+    "sha256": "d3d3bc4f5a970a24fbb1b515061ca1e18d3420bebd6585540a433c99cf30fe4a"
+  },
+  {
+    "path": "etc/host.conf",
+    "size": 84,
+    "sha256": "462d75d681dcd160e810568edf04ddb30ef4fc4d097fddc25351feea4755dc7c"
+  },
+  {
+    "path": "etc/hosts",
+    "size": 46,
+    "sha256": "9ce94a19e5470737a05aafd1d57ed70d1fbeb322068be99dc6e12e309e915ba0"
+  },
+  {
+    "path": "etc/init.d/rc.local",
+    "size": 951,
+    "sha256": "577bdc37d5371544769c1dcd109dd291ce7285f80309803cc3d65bc014a39160"
+  },
+  {
+    "path": "etc/init.d/rcS",
+    "size": 494,
+    "sha256": "4b3a92b2963dce4cba85678cfc4b0f53955795a69563c6e0d402165ae63c4dc6"
+  },
+  {
+    "path": "etc/inittab",
+    "size": 684,
+    "sha256": "adea7f22f79e906f8a152aaa2e9fc8f9c87549eb99423096d192c7ec9561bf48"
+  },
+  {
+    "path": "etc/jffs2/anyka_cfg.ini",
+    "size": 2379,
+    "sha256": "19adf08de2f74b2d46416ad9bea736d2a2228c0e9931e4be13df2ea5cc07dc53"
+  },
+  {
+    "path": "etc/jffs2/hw.conf",
+    "size": 68,
+    "sha256": "c5777cadd5b3afe20caa923c85cd76d0daa546e3890abf88e6306cfdf7873fe6"
+  },
+  {
+    "path": "etc/jffs2/passwd",
+    "size": 140,
+    "sha256": "8ade4f57eb58e7e449e4c4d74fc74acc72e566a67c4a57896c41d7e6abc6ed01"
+  },
+  {
+    "path": "etc/jffs2/ptz.ini",
+    "size": 8,
+    "sha256": "7582465fd5e92edbb66e92118a799d12cf0f96f329ec6d294b5a873538f63b5c"
+  },
+  {
+    "path": "etc/jffs2/resolv.conf",
+    "size": 228,
+    "sha256": "4a4b7e4cc284ec6c98133ef98a42e62479e56c996e1f7fea4c14da0c0726fb4f"
+  },
+  {
+    "path": "etc/jffs2/sensor.tgz",
+    "size": 28066,
+    "sha256": "dd0576f44bda1fc0080e7a6443b7462a6cb9c2432a7ac1d5e940b671d9bf3d49"
+  },
+  {
+    "path": "etc/jffs2/shadow",
+    "size": 137,
+    "sha256": "a4c6e95f50ff33f0779ec0ddd6b18970e0071ee9c45016463979db5b12923d8f"
+  },
+  {
+    "path": "etc/jffs2/time",
+    "size": 10,
+    "sha256": "96b1be8522cb39bf105698dbb602b0606ffedf8f3b06f7496a066d8fe63a0ab3"
+  },
+  {
+    "path": "etc/jffs2/time_zone.sh",
+    "size": 20,
+    "sha256": "5436bbd630282d1db9db9ea499171e21e1198e3c9a7873cf078d5db208b78650"
+  },
+  {
+    "path": "etc/jffs2/yi.conf",
+    "size": 105,
+    "sha256": "e4aa0e37b5ac363964bf769b30ad23dc2e79305eb1e234cd28b15f9281dcf917"
+  },
+  {
+    "path": "etc/jffs2/yi_cfg.ini",
+    "size": 751,
+    "sha256": "9140619e3f175e15dca59cebeadb7c188091c672fb9aada2700268edd7df58a0"
+  },
+  {
+    "path": "etc/ld.so.conf",
+    "size": 14,
+    "sha256": "84a4cbaabd4cdeb0f1572c37f251c338327ec538140ab637732293670d3b6f96"
+  },
+  {
+    "path": "etc/mdev.conf",
+    "size": 1022,
+    "sha256": "dd231bbc0fa84ef08596f9aba747f9649e97241b62d2b2be4a881624b5f3326e"
+  },
+  {
+    "path": "etc/nsswitch.conf",
+    "size": 349,
+    "sha256": "6f7091edfbc6006a9088c514d5075cf52ca0cb02e488cbeb64ac3e49daa0ac85"
+  },
+  {
+    "path": "etc/profile",
+    "size": 846,
+    "sha256": "43a8a1850aef56ad376a1d4a8d0bf1aed051b71d13aaea7d39e83d6a510fe511"
+  },
+  {
+    "path": "etc/services",
+    "size": 325,
+    "sha256": "4232fb8f90a4fcabd98073b9b7e50080a2cab8c42f35a97ac419b381b80c0b54"
+  },
+  {
+    "path": "etc/sysconfig/HOSTNAME",
+    "size": 7,
+    "sha256": "08504b059dd6d00a47742cdbff193c823eacb0a3b4e0113c2279c56910e44e87"
+  },
+  {
+    "path": "etc/udhcpd.conf",
+    "size": 4128,
+    "sha256": "196aacaf0b7ba89504fccdce5db0fd99d79ce23e0817a34e7f8db9e3d8f74ce6"
+  },
+  {
+    "path": "usr/bin/ak_adec_demo",
+    "size": 36532,
+    "sha256": "4f7925ffc0b15d4dd5b4013d8d4adf6e7739771ae4db6e1ebb1a1612c39b2d25",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/anyka_ipc",
+    "size": 793336,
+    "sha256": "e736e1f31d1fe2b849da5c34ab1f16069e093573dc99655628baae6b568f5b72",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/ccli",
+    "size": 12556,
+    "sha256": "d5a91890cd6b92c66678ff0b62c4a3b124cdfb25c3750852d47bdebeb4e00537",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/cloudAPI",
+    "size": 433679,
+    "sha256": "35efe57ead96b116db8b0c535f387dc6629169ac0a29e53b9d9377bea3cdb9f8",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/cmd",
+    "size": 4388,
+    "sha256": "8c813e59b4727f48d8e6a796932f08deec561308b200e6bb7c57e6aa8c0eefa2",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/cmd_serverd",
+    "size": 12800,
+    "sha256": "bd16b3660867b415b93d0ec7573b81f5087e45a426ee816180fa5beb3cf77a4c",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/daemon",
+    "size": 60712,
+    "sha256": "fcb9c775c895d293f9f39a31fac04f69abe076f82e8d903a761e986010476ed1",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/discovery",
+    "size": 20648,
+    "sha256": "9accae90e1cc49411662e4ad2d2f39521f4ade6e2cba283c4cf322dfad6a73be",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/erase_dev",
+    "size": 5633,
+    "sha256": "807036a7d6518867036203a57e13a25e9bceb910726e6650904f8aedc51755ba",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/getconf",
+    "size": 15464,
+    "sha256": "58f5d6efbc6fb73cbd08269129b2e1fbbcb5fae7cb68c2cec7cb40a0a9b66819",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/iconv",
+    "size": 5504,
+    "sha256": "64ea618101670d7054eeb3165d058df845ba7bef691f9c9958cea7b788a66333",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/iwconfig",
+    "size": 27049,
+    "sha256": "b6d4dd2d9c8abbcf0c7c88f4923ba5fa6af01ab9163803e38921c5a4a3895702",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/iwlist",
+    "size": 29901,
+    "sha256": "e6f9ff783e8cf85abd3b83d1b72ab151e4e0067c065775f4266f0192ad6931d3",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/iwpriv",
+    "size": 15220,
+    "sha256": "5ddeb59f992a98dbf2ee9d70e01a44f0ab6695ff80fd0461706e7e2d2d74b119",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/ldd",
+    "size": 7596,
+    "sha256": "c16a6422da35a95a7903c2a97ba38076d5a6191a2ef0e0a00003504f7b7ce9e8",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/mdns",
+    "size": 354152,
+    "sha256": "2ec31de006929be664777410a676de5a4ebc92149e4ae7e684baa024a5e0b2e5",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/read_dev",
+    "size": 6175,
+    "sha256": "244c6c6a9c4f685794a897f7725289fb6fa2b85b33ee8e6f64cd7402db3dd1ad",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/read_gpio",
+    "size": 6032,
+    "sha256": "7557a052ad8f96e8558c94c915ab8e7e07b321e903bda28021280eba7cdfce71",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/read_hw",
+    "size": 6026,
+    "sha256": "c19cd8a251cee59bdda4d8187e3229ca53235c85a523b6e7fbab011a4f097c0c",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/testptz",
+    "size": 30628,
+    "sha256": "884f81789d8278df95e13dd58df7660d9adb1d64ae7412775fa4d2cfc5e184d6",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/write_dev",
+    "size": 6401,
+    "sha256": "44277e170d602be3cb0405b3661933239b7d8f5bedc08085033f27652d64eccb",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/write_gpio",
+    "size": 5730,
+    "sha256": "d8da09213f11174ba09f986252f7086adb00fb26c5cc091bb4bbd3e33a0fdf18",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/bin/write_hw",
+    "size": 5680,
+    "sha256": "97d736fd2df5f242a6257583ea57739c7cfb2e896eb053f23dd428d09fb457b0",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/fw_version",
+    "size": 23,
+    "sha256": "973674824bd71641799bf47b3dae4bd4fd5193fc1e25fd99a05ac8c9a1896bbc"
+  },
+  {
+    "path": "usr/lib/libYiP2P.so",
+    "size": 288192,
+    "sha256": "33758e675c72888d2d3498e08e151738e0fa31274b673f33b34553cfb4a8ac8b",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libak_mt.so",
+    "size": 20355,
+    "sha256": "927ffd89adf3dd65513f553398d05319806fb3ac148f29a5d3af44067a81df9e",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libakaudiocodec.so",
+    "size": 889414,
+    "sha256": "9edba5bd6cfddfb2cbd2a40d29ed981f5ada5a703a7b5568401a81d3ffa76f41",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libakaudiofilter.so",
+    "size": 31792,
+    "sha256": "94dad2cfa63eb300ae7e80aea5650b8b312602f70e19f31581cf85612d58f9bc",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libakispsdk.so",
+    "size": 19215,
+    "sha256": "d1ea246a54a0f9b740db1e10892c2c73707fd659ebe436672b162ffaec498f52",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libakmedia.so",
+    "size": 376684,
+    "sha256": "de821bf6c534bc93782a45181754d99261a53917757364305a910dbba19ebf92",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libakstreamenc.so",
+    "size": 191839,
+    "sha256": "ab7aa7ddb637fbb5541e2c3df7b9f4a5c90ef5aa1fe9886b11d9ff50874f30ee",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libapp_osd_ex.so",
+    "size": 14030,
+    "sha256": "dd9ff6a811c61969b8dac614f293e45182fe079b3c84c962a69d347bab98bed7",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libcloudapi.so",
+    "size": 236288,
+    "sha256": "6ef035d5e8e31115cf57646c2abb633852411aaeedc11ac466866e80f1d377f0",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libcrypto.so.1.0.0",
+    "size": 1531460,
+    "sha256": "ea4df366baff5ecc026531ae37b1e116482b93fac9df4c90b9301ced4bd07776",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libhandler.so",
+    "size": 9874,
+    "sha256": "2c70272eaf4875f2698fe5e20dc7d53c3a61c7405a66ec735c873b5b6dc42771",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libiconv.so",
+    "size": 304536,
+    "sha256": "751b2f86b06b34a346923e3102d34dab2f282e18b5912cc44f08cbfb92ced978",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libnl.so.1",
+    "size": 246000,
+    "sha256": "ad3a470d64e54aef1a12cbc3f785d97cbcea7d829855caf1c366fed1f7e1d619",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/liboss.so",
+    "size": 1215139,
+    "sha256": "b967f3d0d2ebe789a975c2bb94b564bdd3461c9158d04edc2df4b8bd701ccc6d",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/lib/libscanner.so",
+    "size": 84259,
+    "sha256": "baf862649c0a8ffe26861328fdda1a7e19bab9a1409f46f498ec7ec3aee1e288",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/local/ak_font_16.bin",
+    "size": 265798,
+    "sha256": "537ef3703e74f8ecb157969561c34f5c07dfe2873cce0ebd497fa06d31207ba1"
+  },
+  {
+    "path": "usr/local/ca.crt",
+    "size": 1261,
+    "sha256": "df68841998b7fd098a9517fe971e97890be0fc93bbe1b2a1ef63ebdea3111c80"
+  },
+  {
+    "path": "usr/local/chs/err.aac",
+    "size": 3860,
+    "sha256": "7b7523690e9ca2d4156171e44ba1b347021a03a6bd37894c67c16e79f56111a4"
+  },
+  {
+    "path": "usr/local/chs/err_1.aac",
+    "size": 3091,
+    "sha256": "bcd36d10e69c9d960c59e2791d194bfd0474bc3b6f05201d5a18f956251ecf30"
+  },
+  {
+    "path": "usr/local/chs/err_2.aac",
+    "size": 2588,
+    "sha256": "7f7e1618c1fae9a82b35c76b2dc96c320b7105a837b5335dfab59ca9357c27d7"
+  },
+  {
+    "path": "usr/local/chs/err_3.aac",
+    "size": 2764,
+    "sha256": "47cacba381058bf58d93d8df1f9434f4d96dff1e3d54fe3b7b276711e9875107"
+  },
+  {
+    "path": "usr/local/chs/err_4.aac",
+    "size": 2412,
+    "sha256": "6d6e2c74f982af6bfb78c253dbf97582c3d157407ca4a128d66fed8fea703aef"
+  },
+  {
+    "path": "usr/local/enu/err.aac",
+    "size": 4427,
+    "sha256": "07c15a1b771b904d86e692622cbeb5dd8059862b006bc15c741e955e4e9c52a1"
+  },
+  {
+    "path": "usr/local/enu/err_1.aac",
+    "size": 3468,
+    "sha256": "f16a31768515cdd8d159bd5c4debcfd5f34213c96f27919d30714d05a1ce9257"
+  },
+  {
+    "path": "usr/local/enu/err_2.aac",
+    "size": 3373,
+    "sha256": "73716e6484ee13f8479d6253dde618c381fc946d91bcd563e9a89e27d756cdb2"
+  },
+  {
+    "path": "usr/local/enu/err_3.aac",
+    "size": 3043,
+    "sha256": "e7cdf36070cec6fc759db9df7a2d2157dde6a9afeead4876efadc1756da19cd8"
+  },
+  {
+    "path": "usr/local/enu/err_4.aac",
+    "size": 3657,
+    "sha256": "6ab21fc8ce9607a9154c4742fa14fbea151e86119a554eaf3874e6f914974bfb"
+  },
+  {
+    "path": "usr/local/factory2023_2rd",
+    "size": 105,
+    "sha256": "6e3e10bfd6943160e2d7ad736dcc51797d1dcaf6d291b95a67e32ef9b5d3e06e"
+  },
+  {
+    "path": "usr/local/factory_cfg.ini",
+    "size": 3471,
+    "sha256": "d01ad3b3c6f074a31395d56af0d808f639e31c5a9f28fb754891f301447d1bae"
+  },
+  {
+    "path": "usr/local/yi_cfg.ini",
+    "size": 297,
+    "sha256": "5d21147e9a7d92c016ebfcc75f344e48610ef30f8403c55acd256e79f34435e3"
+  },
+  {
+    "path": "usr/modules/ak_info_dump.ko",
+    "size": 3723,
+    "sha256": "50829f0bd777d868b282700b0fe4e2741fbc22cb4fad909823adfa1837c1123a",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/modules/akcamera.ko",
+    "size": 22974,
+    "sha256": "fb1b55c824116553ff26577d5c4051adfb1e3d5589f3b7491e4bee6245f3de15",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/modules/g_file_storage.ko",
+    "size": 33093,
+    "sha256": "322958c96c97fc19e6cc63322e2601274fa3303451a93dcdf4c1effbed27f36b",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/modules/g_mass_storage.ko",
+    "size": 44905,
+    "sha256": "aa6b77fbedd474c3290fa609cf95882dd43b6e268806a0c384a05be44c9ed57b",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/modules/otg-hs.ko",
+    "size": 19483,
+    "sha256": "4a380f832d8e3b4cec4104854812f6a2670447fcde96ab9a897e0ffcd98ad6ed",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/modules/udc.ko",
+    "size": 18279,
+    "sha256": "e1729ddfbd7357f0ef3bf8eab5799168cd14d8e5280ca73664318ee6b09e8665",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/modules/usbburn.ko",
+    "size": 9237,
+    "sha256": "c194e0d81f098148c692cb3d161cb50a6020a0fe5cd423949c4a4b6d72626f78",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/sbin/anyka_ipc.sh",
+    "size": 1101,
+    "sha256": "cfec09c6aba12a7406ef84e6d79fd9fd8e2854d65b232d21d9c9916bde102f10"
+  },
+  {
+    "path": "usr/sbin/ap.sh",
+    "size": 1602,
+    "sha256": "bac20710f85392a45b8d7ec8cded0aba7864d554a991ded382ca655c7d51bd36"
+  },
+  {
+    "path": "usr/sbin/camera.sh",
+    "size": 2511,
+    "sha256": "2a28e57d14ada8b75b92a45f17dfa9b14e6efb88c5f6b88b8ebd706a97465eba"
+  },
+  {
+    "path": "usr/sbin/crypt_file",
+    "size": 20295,
+    "sha256": "29732cdad6341a71cb86b2c2d60439c5add001ca292c989dd8e5b0755d12a1ec",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/sbin/default.script",
+    "size": 4910,
+    "sha256": "f60d52c2ec1235950fbe65aa3244666a7b6c966d3bdff3c87b3435c490ae8737"
+  },
+  {
+    "path": "usr/sbin/device_save.sh",
+    "size": 1121,
+    "sha256": "28c04c3e5845b55cd0f2952b2662d6e8b7368fafc61d8eeb007869dfbe4365ab"
+  },
+  {
+    "path": "usr/sbin/eth_manage.sh",
+    "size": 2874,
+    "sha256": "4524367d027294f4cc7b3aa2858e312c2a26fbb13e41062a75f55278b08e98ee"
+  },
+  {
+    "path": "usr/sbin/kill_pro.sh",
+    "size": 201,
+    "sha256": "ee4196717e4f77a3d700f28d5f9f0d7b43771d749570d696df404fb11c8d5771"
+  },
+  {
+    "path": "usr/sbin/led.sh",
+    "size": 1224,
+    "sha256": "9e0fbc51d982d34683fd88c8b082811cac2e8c17b92e95c6ec5548fabb45249d"
+  },
+  {
+    "path": "usr/sbin/led_status.sh",
+    "size": 610,
+    "sha256": "8c2cc6fbdd101ab3cc7bdd2e176fb843a7f9f0ed05bd82f31bdef4b2c5044886"
+  },
+  {
+    "path": "usr/sbin/net_manage.sh",
+    "size": 1255,
+    "sha256": "7ee53c00f58149e9b0085934d6ebbc3a5990df39e6721354b762c0342964cab7"
+  },
+  {
+    "path": "usr/sbin/rda_tools",
+    "size": 6852,
+    "sha256": "d6968d1402ffe8b2e30faab1d5b2920c34acd5256057e4c43c521433f623831a",
+    "format": "ELF",
+    "bits": 32,
+    "endian": "little",
+    "machine": 40
+  },
+  {
+    "path": "usr/sbin/recover_cfg.sh",
+    "size": 935,
+    "sha256": "47fa7ffdaacfbb472de6752ec824812f4d45f1cf12375cd3e6fbd8537cfdceea"
+  },
+  {
+    "path": "usr/sbin/service.sh",
+    "size": 4272,
+    "sha256": "7252a70646dddf9d056d4c1dd42da169fe121dcfaec73189c87195bdd3ef4a5e"
+  },
+  {
+    "path": "usr/sbin/standby.sh",
+    "size": 535,
+    "sha256": "f06124b67159c72b42a349dcdc373d81807c821b15cffc90c4d6ae4a6fdbe277"
+  },
+  {
+    "path": "usr/sbin/station_connect.sh",
+    "size": 4146,
+    "sha256": "80687885bd743e250ed4d72c60f87ce570ea48624e15f704b7a165dd476052d5"
+  },
+  {
+    "path": "usr/sbin/udisk.sh",
+    "size": 874,
+    "sha256": "b7e7b0f8227d74b8142b29e0c7311100603b2235343f8209834b28307138c7e4"
+  },
+  {
+    "path": "usr/sbin/update.sh",
+    "size": 9022,
+    "sha256": "cdc61349a0db8b7deedd9e7ab14574c1fd31874f28bf9ad01362c87007beeb6d"
+  },
+  {
+    "path": "usr/sbin/update_audio_ota_packet.sh",
+    "size": 1227,
+    "sha256": "394a97248b72f9eae4db6da735d4ae1cf61834cc751171bfbc40a024763723f7"
+  },
+  {
+    "path": "usr/sbin/update_factory_data.sh",
+    "size": 3971,
+    "sha256": "ea8742cc7591726be5e1d4346526969214271e88f3b32ceb4f08fe5acb0930eb"
+  },
+  {
+    "path": "usr/sbin/update_play_aac.sh",
+    "size": 449,
+    "sha256": "956341a949a5c803dc1c6fe7b50047c2afd65870bd8bc13769bdfdcbd5572013"
+  },
+  {
+    "path": "usr/sbin/wifi_ap.sh",
+    "size": 1709,
+    "sha256": "5ec0b8ee0b5eea0ddd6a981629b118cbf19e6c560d302e3762bffcd9690d8ac3"
+  },
+  {
+    "path": "usr/sbin/wifi_manage.sh",
+    "size": 696,
+    "sha256": "0534208ad58e097f43b0224c5bcdf3ce9d75ec8d3fa045d317dc4a221377a2a8"
+  },
+  {
+    "path": "usr/sbin/wifi_run.sh",
+    "size": 4922,
+    "sha256": "c1bf0eddd42a8f2d129df3462e1bf3af211ae52c9cb1bf12f60fc3129e0fd53b"
+  },
+  {
+    "path": "usr/share/udhcpc/default.script",
+    "size": 1789,
+    "sha256": "839b8f862f731d7abbec064ecc42bef34a770ba8b11d1f412a177353143a4fa8"
+  },
+  {
+    "path": "var/log/messages",
+    "size": 84792,
+    "sha256": "26e5b1e7b0324e37893dc31e68ab41e669b5caa8582f2e80c11790a56cb702c2"
+  }
+]

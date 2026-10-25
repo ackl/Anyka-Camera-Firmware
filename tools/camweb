@@ -1,0 +1,16 @@
+#!/bin/sh
+# camweb -- host-side video/PTZ/LED panel for the camera.
+#
+#   tools/camweb serve                 -> http://firefly:8090/ (video + PTZ + LEDs)
+#   tools/camweb snap [OUT.jpg]        -> one frame through our own RTSP client
+#   tools/camweb probe                 -> RTSP tracks/SDP/throughput
+#   tools/camweb sh 'board command'    -> same as tools/cam, Rust implementation
+#
+# The binary is tools/rust/camweb/target/camweb; build it with
+# tools/rust/camweb/build.sh. Everything except the video decode is Rust; ffmpeg
+# is called only to turn H.264 into JPEG for the browser.
+set -eu
+cd "$(dirname "$0")/.."
+BIN=tools/rust/camweb/target/camweb
+[ -x "$BIN" ] || { echo "camweb not built: run tools/rust/camweb/build.sh" >&2; exit 1; }
+exec "$BIN" "$@"

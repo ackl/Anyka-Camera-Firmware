@@ -1,0 +1,18 @@
+#!/bin/sh
+# tools/beep [LEVEL] [HOST] -- play a notification cue on the Anyka camera.
+#
+# LEVEL: cue (default, -40 dBFS, comfortable) | warn (-30) | alarm (-20, reserved
+#        for emergency/critical use only -- it is genuinely loud on this board).
+# HOST:  default 192.168.1.103, overridable with $CAM_HOST.
+#
+# Runs /mnt/Factory/custom/beep on the card via tools/cam (telnet :2323).  That
+# script goes through quiet-cue.sh, which holds SPK_PA low; the stock decoder
+# alone is inaudible because the driver mutes the active-low amp while playing.
+set -e
+case "$1" in
+    cue|warn|alarm) LEVEL=$1; shift ;;
+    "") LEVEL=cue ;;
+    *)  LEVEL=cue ;;   # not a level word -> treat it as a host
+esac
+if [ -n "$1" ]; then export CAM_HOST="$1"; fi
+exec "$(dirname "$0")/cam" "/mnt/Factory/custom/beep $LEVEL"
