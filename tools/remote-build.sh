@@ -20,8 +20,13 @@ root=$(dirname "$here")
 timeout 10 ssh -o BatchMode=yes -o ConnectTimeout=8 build-01 true 2>/dev/null \
     || { echo "remote-build: build-01 unreachable (ssh build-01)" >&2; exit 1; }
 
+# Remote path is keyed by the LOCAL absolute path, not just the crate name, so
+# two agents building the same crate from different git worktrees at the same
+# time cannot overwrite each other's sources or artifacts.
+remote="src/anyka-build/$(printf '%s' "$root/tools/rust/$crate" | sha256sum | cut -c1-16)/$crate"
+
 rsync -a --delete --exclude target \
-    "$root/tools/rust/$crate/" "build-01:src/anyka/tools/rust/$crate/"
+    "$root/tools/rust/$crate/" "build-01:$remote/"
 # shellcheck disable=SC2068
-ssh -o BatchMode=yes build-01 "cd ~/src/anyka/tools/rust/$crate && $* ./build.sh"
-rsync -a "build-01:src/anyka/tools/rust/$crate/target/" "$root/tools/rust/$crate/target/"
+ssh -o BatchMode=yes build-01 "cd ~/$remote && $* ./build.sh"
+rsync -a "build-01:$remote/target/" "$root/tools/rust/$crate/target/"
