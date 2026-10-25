@@ -1,0 +1,19 @@
+[package]
+name = "camrtsp"
+version = "0.1.0"
+edition = "2021"
+description = "Clean-room Rust RTSP/RTP server for the AK3918 camera (no crates)"
+
+# No dependencies, ever: pure std + hand-written FFI to the vendor libs.
+# Keeps the ARMv5TE build reproducible with one rustc invocation (build.sh).
+
+[[bin]]
+name = "camrtsp"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "s"
+lto = true
+panic = "abort"
+codegen-units = 1
+strip = true
