@@ -28,6 +28,11 @@ against upstream means something and a fix can go back as a patch. Our commits
 | `github` | `git@github.com:ackl/Anyka-Camera-Firmware.git` | the GitHub fork of upstream |
 | `upstream` | `MuhammedKalkan/Anyka-Camera-Firmware` | fetch only (`no_push`) |
 
+Live 2026-10-25: `origin/main` and `github/main` both at `aa88966`, and GitHub
+reports the fork with `parent = MuhammedKalkan/Anyka-Camera-Firmware` (a real fork,
+not a look-alike repo). Note `github` is **public** — it mirrors the private
+basestar repo, which is fine because `.gitignore` keeps every secret out of both.
+
 `README.md` is ours (describes this whole repo); upstream's is preserved verbatim
 as `README.upstream.md`. Upstream updates: `git fetch upstream && git rebase
 upstream/main`.
