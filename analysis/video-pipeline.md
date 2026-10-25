@@ -303,3 +303,43 @@ matrix, in `work/rtsp-rust-notes.md`):
   packets are fed to the H.264 depacketiser as garbage NALs.
 * SDP `o=` still names the old address `192.168.1.79` while `c=` says `.103`;
   both are ignored in favour of the URL actually dialled.
+
+### The stock server is multi-session (2026-10-25, evening)
+
+Checked because the plan is to run our own RTSP server *on* the camera and feed it
+by pulling from the stock one on loopback: if the stock `ak_rtsp_demo` allowed a
+single client, that design would have broken firefly's live view. It does not.
+
+Two concurrent ffmpeg pulls from firefly, deliberately overlapping (B starts 1 s
+after A, both `-rtsp_transport tcp`, 9–10 s windows):
+
+| client | decoded frames | bytes | size |
+|---|---|---|---|
+| A | 171 | 355,580 | 1280x720 |
+| B | 175 | 360,818 | 1280x720 |
+
+Both got a full-rate stream, so sessions are independent and adding a second
+consumer on the board costs the encoder another client, not the stream. Two
+caveats worth remembering: the *encoder* is still single-owner (only `rtsp` opens
+`/dev/video0`), and this is a driver-level observation of frames arriving, not a
+measurement of what the sensor/ISP dropped under the extra load.
+
+### The SPS in our own code (2026-10-25)
+
+`camrtsp`'s `media::sps_dimensions` reported the 1280x720 stream as **16x512**,
+which we had papered over with a plausibility guard in the source builder. Two
+bugs, one behind the other:
+
+1. the bit reader ran over the raw EBSP, so the emulation-prevention bytes
+   (`00 00 03 xx`, two of them in this 24-byte SPS) shifted every field by a byte;
+   `to_rbsp()` now strips only real escapes (`00 00 03` followed by `00..03`);
+2. the profile field was read as `b.bit()? * 0 + { 8 bits }`, which consumed one
+   bit and discarded it, so *every* `ue`/`se` after it decoded one bit late. The
+   profile, constraint flags and level are byte fields: the bit reader now starts
+   at `rbsp[4]`.
+
+Ground truth came from `ffmpeg -bsf:v trace_headers` on `/tmp/probe-vs0.h264`:
+profile 77 (Main), level 40, `log2_max_frame_num_minus4=12`, `pic_order_cnt_type=2`,
+`max_num_ref_frames=1`, `pic_width_in_mbs_minus1=79`, `pic_height_in_map_units_minus1=44`,
+`frame_mbs_only=1`, no cropping → exactly 1280x720. That SPS is now a unit test, so
+the parser cannot silently drift again.
