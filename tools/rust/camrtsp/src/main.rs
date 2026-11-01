@@ -5,6 +5,7 @@
 //! uClibc shared objects.
 
 mod b64;
+mod client;
 mod httpd;
 mod media;
 mod rtsp;
