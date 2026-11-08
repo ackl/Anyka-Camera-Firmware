@@ -61,7 +61,7 @@ sleep 2
 # upstream is the stock rtsp above, so this must start after it.
 #
 # The ingest URL lives in a file so switching between the LAN receiver and the
-# public Cloudflare endpoint (https://cam.ackl.me/ingest) needs no edit here.
+# public Cloudflare endpoint (https://liu.ackl.me/ingest) needs no edit here.
 # The token comes from the environment, not argv, so it stays out of `ps`.
 # Both are optional: without them it still records, it just never uploads.
 INGEST_URL=$(cat /mnt/Factory/custom/ingest.url 2>/dev/null)

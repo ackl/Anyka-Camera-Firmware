@@ -59,7 +59,8 @@ exist because the board has no packet capture.
 | HTTP-over-TLS to the receiver | host: 7.7 MB segment uploaded, sha256 echoed, local copy deleted; received sidecar intact (902 AUs, 20 keyframes, 1280x720, 60066 ms) |
 | Receiving service | 23 files / 71 MB in `/srv/storage/cam/rec`, per-file sha256 in `journalctl -u camingest` |
 | Upload from the camera itself | on the board over LAN HTTP: `upload: 29 considered, 3 uploaded (8388608 B, 0 resumed), 3 deleted, 0 failed, capped` |
-| The last leg (camera → Cloudflare → Caddy → receiver over TLS) | **not yet run** — see below |
+| The public leg: camera → Cloudflare → tunnel → Caddy → receiver | **run 2026-11-08.** Board: `tlsprobe liu.ackl.me` → `verified via TLSv1.2 …CHACHA20-POLY1305-SHA256 (6 roots embedded)`. Camera: `upload: 1 considered, 1 uploaded (1235619 B, 0 resumed), 1 deleted, 0 failed`. Receiver journal: `upload 20261108-234011.h264 video 1235264 bytes sha256 0640f73f…` |
+| No public IP anywhere in the path | `liu.ackl.me` resolves to Cloudflare anycast (104.21.92.207); tunnel and camera both dial out; nothing is port-forwarded |
 
 ## Shape of the deployment
 
@@ -68,8 +69,8 @@ camera (192.168.1.103)                     house
   camrtsp --source client:127.0.0.1:554/vs0   ← pulls the stock encoder
      ├── motion detector (AU size vs 30-frame baseline)
      ├── recorder → /mnt/Factory/rec/rec/NAME.h264 + .json (60 s, 8 GiB quota)
-     └── uploader → https://cam.ackl.me/ingest → ┬ Cloudflare edge (TLS)
-                                                 └ cloudflared → Caddy .90:443
+     └── uploader → https://liu.ackl.me/ingest → ┬ Cloudflare edge (public TLS)
+                                                 └ cloudflared → Caddy .90:80, plain HTTP
                                                     → 192.168.1.240:8080
                                                        camingest → /srv/storage/cam
 ```
@@ -79,26 +80,52 @@ camera (192.168.1.103)                     house
   /srv/storage/cam --prefix /ingest`, token from `/etc/camingest.env` (0600).
   Refuses to start with an empty token. Plain HTTP by design: TLS terminates in
   Caddy.
-- **Caddy**: `https://cam.ackl.me { tls internal; reverse_proxy 192.168.1.240:8080 }`
-  appended to `/opt/edge/caddy/Caddyfile` (backup:
-  `Caddyfile.before-cam-ingest-*`). ✓ added, ✓ validates, ✓ reloads, ✓ answers 401
-  to an unauthenticated request.
+- **Caddy**: an **`http://`** block, appended to `/opt/edge/caddy/Caddyfile`
+  (backups `Caddyfile.before-liu-*`, `Caddyfile.before-logredact-*`):
+
+      http://liu.ackl.me {
+          reverse_proxy 192.168.1.240:8080 { transport http { response_header_timeout 60s } }
+          request_body { max_size 9MB }
+      }
+
+  It must not be `https://`. The tunnel hands Caddy the request on port 80, and a
+  `https://` site block there can only 308-redirect — to the very URL the client
+  already asked for, so every request goes round the loop (`code=308`,
+  `location: https://liu.ackl.me/ingest/probe.h264`). Public TLS ends at
+  Cloudflare, exactly as for the other `http://` hosts in that file. The access
+  log is wrapped in `format filter` to delete `X-Cam-Token` and `Authorization`:
+  the camera presents its token on every request and it was landing in clear in
+  `/data/access-liu.log`. Caddy's `:80` is published only on `127.0.0.1:8080`, so
+  a LAN-side check is `curl -H 'Host: liu.ackl.me' http://127.0.0.1:8080/ingest/x`
+  *on edge-proxy-01*; `https://192.168.1.90` is the separately published `:443`.
 - **Upload protocol**: 256 KiB chunks, `X-Cam-Token`, per-file sha256 echoed by
   the receiver, local file deleted **only** on a sha match, 8 MiB per pass, one
   pass every 300 s.
 
-### The one missing piece
+### The tunnel hostname (done 2026-11-08)
 
-`cam.ackl.me` resolves (wildcard `*.ackl.me`), and Caddy is ready, but the
-tunnel's ingress is configured **in the Cloudflare dashboard** (the container runs
-`cloudflared tunnel run --token …`, so there is no local config file to edit).
-Someone with dashboard access needs to add one public hostname:
+The tunnel's ingress lives **in the Cloudflare dashboard** — the container runs
+`cloudflared tunnel run --token …`, so there is no local config file to edit and
+no way to read the ingress from the host. One public hostname now points at the
+proxy:
 
-    cam.ackl.me  →  http://192.168.1.90:80
+    liu.ackl.me  →  http://192.168.1.90:80
 
-Then the camera's `--upload` can move from the LAN URL to
-`https://cam.ackl.me/ingest` and nothing else changes. Test with
-`camrtsp tlsprobe cam.ackl.me` from the board first.
+The name is `liu`, not the `cam` this note used to assume; the hostname exists
+only in the dashboard, so it was an unknown until someone looked. The `:80`
+target is the load-bearing detail, and the reason for the redirect loop above.
+
+The board's `custom/ingest.url` is `https://liu.ackl.me/ingest`. Because
+Cloudflare's edge presents a public certificate, the camera verifies it with the
+**embedded** roots and needs no `CAMTLS_CA`; the private Caddy root that the LAN
+test needed (`custom/caddy-root.crt`) has been deleted from the card.
+
+Checks, cheapest first:
+
+    curl -o /dev/null -w '%{http_code}\n' https://liu.ackl.me/ingest/x   # 401 from anywhere
+    curl -H "X-Cam-Token: $(cat ~/.config/anyka/ingest.token)" …        # 404 = authorised
+    camrtsp tlsprobe liu.ackl.me                                        # on the board
+    grep 'camrtsp: upload:' /tmp/camrtsp.log                            # then a real pass
 
 ## Clock: the 1970 problem
 

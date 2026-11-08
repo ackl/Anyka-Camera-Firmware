@@ -61,7 +61,7 @@ re-derive the patched binaries.
 | Browser panel | `tools/camweb serve` -> `http://firefly:8090/` — MJPEG live view, PTZ, LEDs, day/night, pins. Rust RTSP client + Rust board telnet; ffmpeg only decodes H.264 to JPEG | `tools/README.md` -> "Live panel" |
 | Own RTSP server | `camrtsp serve --source client:127.0.0.1:554/vs0` on the board: re-serves `/vs0` on :8554, motion detector, motion-gated recorder, batch uploader | `analysis/offsite-ingest.md` |
 | Motion-gated recording | segments to `/mnt/Factory/rec/rec/NAME.h264` + `.json` sidecar, 60 s, 2 G quota; fires on movement in frame, closes on rotation | `analysis/offsite-ingest.md` |
-| Offsite upload | `camrtsp --upload` -> TLS 1.2 (mbedTLS on ARMv5TE) -> Caddy -> `camingest` on storage-01 `/srv/storage/cam`; local file deleted only after the receiver echoes the sha256 | 23 files / 71 MB received; `analysis/offsite-ingest.md` |
+| Offsite upload | `camrtsp --upload https://liu.ackl.me/ingest` -> the camera's own TLS 1.2 (mbedTLS on ARMv5TE, embedded roots) -> Cloudflare edge -> tunnel -> Caddy `:80` -> `camingest` on storage-01 `/srv/storage/cam`; local file deleted only after the receiver echoes the sha256 | **live over the public internet: 104 files / 182 MB received**; `analysis/offsite-ingest.md` |
 | Boot clock | `ntpd -q -p 192.168.1.254` in `config.sh` before the recorder names anything (no RTC: it booted at 1970) | `analysis/offsite-ingest.md` |
 
 Audio levels are by ear, not meters (the mic saturates): **−40 dBFS = comfortable**,
@@ -247,13 +247,21 @@ The cameras are going offsite behind an LTE hotspot, so the target is **our own 
 can only carry motion events; CGNAT means the camera dials out and homelab never
 reaches in.
 
-`camrtsp` now serves a live stream from an upstream RTSP source
-(`--source client:HOST/PATH`), detects motion from the compressed stream, and records
-keyframe-aligned segments to the card with pre-roll and a quota. Details, numbers and
-what is still missing: `work/offsite-2026-11-14.md`. Encoder ownership (why the stock
-`rtsp` still runs, and the verified crosstool route off it):
-`analysis/encoder-ownership.md`. **Blocked on the board being powered** — every
-result so far is host-side.
+`camrtsp` serves a live stream from an upstream RTSP source (`--source
+client:HOST/PATH`), detects motion from the compressed stream, records
+keyframe-aligned segments to the card with pre-roll and a quota, and uploads them.
+It does all of this **on the board**, not just on the host, and the whole public
+leg is live: camera → Cloudflare edge (`liu.ackl.me`, public TLS verified by our
+own mbedTLS) → tunnel → Caddy on edge-proxy-01 → `camingest` on storage-01.
+Details, numbers and what is still missing: `analysis/offsite-ingest.md` and
+`work/offsite-2026-11-14.md`. Encoder ownership (why the stock `rtsp` still runs,
+and the verified crosstool route off it): `analysis/encoder-ownership.md`.
+
+Still open on this path: `keep_days` silently dropping footage older than 14 days
+that was never uploaded; nothing has yet uploaded over the **LTE** uplink (every
+byte so far went out over home fibre — 8 MiB per 300 s pass is untested against a
+real cellular link); motion thresholds are untuned on night/IR footage; and
+storage-01 has no retention policy of its own.
 
 ## Not on the roadmap
 Flashing anything, u-boot, replacing the stock kernel, or any change that needs the

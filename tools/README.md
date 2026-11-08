@@ -441,8 +441,9 @@ no RTC, it used to boot at 1970) and starts:
         --listen 0.0.0.0:8554 --rec /mnt/Factory/rec --rec-quota 2G --motion-log \
         --upload "$(cat /mnt/Factory/custom/ingest.url)" --upload-every 300
 
-Two files on the card, neither in git: `custom/ingest.url` (one URL — the LAN
-receiver today, `https://cam.ackl.me/ingest` once the tunnel has the hostname) and
+Two files on the card, neither in git: `custom/ingest.url` (one URL —
+`https://liu.ackl.me/ingest`, which is the Cloudflare Tunnel hostname; the LAN
+receiver is `http://192.168.1.240:8080/ingest`) and
 `custom/ingest.token` (0600). The token travels in the environment, not argv, so it
 does not show up in `ps`. Old config kept as `Factory/config.before-offsite.sh`.
 
@@ -465,8 +466,18 @@ it, so never call mbedtls with a Rust slice directly.
     /usr/local/bin/camingest serve --listen 0.0.0.0:8080 \
         --root /srv/storage/cam --prefix /ingest     # token: /etc/camingest.env
 
-Crate in `tools/rust/camingest` (branch `ingest`, not merged). It refuses to start
-with an empty token and never treats a `.part` as a segment. Caddy on
-edge-proxy-01 terminates TLS: `https://cam.ackl.me { tls internal; reverse_proxy
-192.168.1.240:8080 }` — appended to `/opt/edge/caddy/Caddyfile`, whose previous
-version is kept alongside as `Caddyfile.before-cam-ingest-*`.
+Crate in `tools/rust/camingest` (merged; `tools/rust/camingest/src`). It refuses
+to start with an empty token and never treats a `.part` as a segment.
+
+Caddy on edge-proxy-01 does **not** terminate TLS — Cloudflare's edge does, and
+the tunnel delivers plain HTTP to port 80. So the site block is `http://`,
+`liu.ackl.me → reverse_proxy 192.168.1.240:8080`, appended to
+`/opt/edge/caddy/Caddyfile` (previous versions kept alongside as
+`Caddyfile.before-liu-*`). An `https://` block there loops: Caddy 308-redirects
+`:80` to the same URL, which comes back through Cloudflare ad infinitum. Its
+access log uses `format filter` to strip `X-Cam-Token`/`Authorization`.
+
+Public hostname, added in the Cloudflare dashboard (token-managed tunnel, no
+local ingress file): `liu.ackl.me → http://192.168.1.90:80`. The camera reaches
+it outbound and verifies Cloudflare's certificate with the embedded roots in
+`tools/tls/ca-bundle.pem`, so no private CA is installed on the device.
