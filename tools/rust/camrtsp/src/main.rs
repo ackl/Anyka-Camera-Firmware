@@ -12,6 +12,8 @@ mod motion;
 mod rec;
 mod rtsp;
 mod source;
+mod tls;
+mod upload;
 mod venc;
 
 use std::net::{SocketAddr, ToSocketAddrs};
@@ -25,6 +27,7 @@ camrtsp — Rust RTSP server for the AK3918 camera
 USAGE:
   camrtsp serve  [OPTIONS]
   camrtsp info   [--source SPEC]
+  camrtsp tlsprobe HOST[:PORT]   verify the ingest endpoint's certificate
   camrtsp version
 
   --listen ADDR      RTSP listen address        (default 0.0.0.0:8554)
@@ -44,6 +47,12 @@ USAGE:
   --rec-quota BYTES  byte cap for DIR/rec (accepts 8G, 800M, 12MiB)
                                        (default 8589934592, 8 GiB)
   --rec-always       write every segment, not only while motion is detected
+  --upload URL       push finished segments to URL (https://HOST[:PORT]/PREFIX,
+                     or http:// on a LAN); needs --rec
+  --upload-token T   X-Cam-Token for the receiver (empty = send none);
+                     $CAMRTSP_UPLOAD_TOKEN is used if the flag is absent
+  --upload-every S   seconds between upload passes (default 300)
+  --upload-max BYTES per pass, so the uplink is never saturated (default 8M)
                      (for tuning the detector from real footage)
   --motion-log       print the detector state once a second
 ";
@@ -54,6 +63,7 @@ fn main() {
     let code = match args.first().map(|s| s.as_str()) {
         Some("serve") => cmd_serve(&args[1..]),
         Some("info") => cmd_info(&args[1..]),
+        Some("tlsprobe") => cmd_tlsprobe(&args[1..]),
         Some("version") | Some("-V") | Some("--version") => {
             println!("camrtsp {}", media::VERSION);
             0
@@ -69,6 +79,28 @@ fn main() {
         }
     };
     std::process::exit(code);
+}
+
+/// Does the TLS half of an upload work from *this* box, right now? Answers the
+/// three questions that look alike in the log — DNS, certificate, cipher — and
+/// prints the verdict. Runs on the camera: there is no other way to find out
+/// there.
+fn cmd_tlsprobe(args: &[String]) -> i32 {
+    let target = match args.first() {
+        Some(t) => t.clone(),
+        None => return usage_err("tlsprobe needs HOST[:PORT]"),
+    };
+    let timeout = Duration::from_secs(15);
+    match tls::probe(&target, timeout) {
+        Ok(line) => {
+            println!("{line}");
+            0
+        }
+        Err(e) => {
+            eprintln!("camrtsp: tlsprobe {target}: {e}");
+            1
+        }
+    }
 }
 
 fn parse_addr(s: &str) -> Result<SocketAddr, String> {
@@ -139,6 +171,10 @@ fn cmd_serve(args: &[String]) -> i32 {
     let mut rec_quota: u64 = 8 << 30;
     let mut rec_always = false;
     let mut motion_log = false;
+    let mut upload_url = String::new();
+    let mut upload_token = String::new();
+    let mut upload_every: u64 = 300;
+    let mut upload_max: u64 = 8 << 20;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -179,6 +215,35 @@ fn cmd_serve(args: &[String]) -> i32 {
             }
             "--rec-always" => rec_always = true,
             "--motion-log" => motion_log = true,
+            "--upload" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => upload_url = v.clone(),
+                    None => return usage_err("--upload needs a URL"),
+                }
+            }
+            "--upload-token" => {
+                i += 1;
+                match args.get(i) {
+                    // Never echo the token back in an error or a log line.
+                    Some(v) => upload_token = v.clone(),
+                    None => return usage_err("--upload-token needs a value"),
+                }
+            }
+            "--upload-every" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<u64>().ok()) {
+                    Some(v) if v > 0 => upload_every = v,
+                    _ => return usage_err("--upload-every needs a positive number of seconds"),
+                }
+            }
+            "--upload-max" => {
+                i += 1;
+                match args.get(i).and_then(|v| parse_bytes(v)) {
+                    Some(v) => upload_max = v,
+                    None => return usage_err("--upload-max needs a byte count (8M, 500K)"),
+                }
+            }
             other => return usage_err(&format!("unknown flag {:?}", other)),
         }
         i += 1;
@@ -233,6 +298,47 @@ fn cmd_serve(args: &[String]) -> i32 {
         std::thread::Builder::new()
             .name("tap".into())
             .spawn(move || tap(tap_src, tap_dir.as_deref(), rec_quota, rec_always, motion_log))
+            .ok();
+    }
+
+    // The uploader is a separate thread on purpose: a slow LTE pass must never
+    // delay a frame, and a dead receiver must never stop the recorder.
+    if !upload_url.is_empty() {
+        let dir = match &rec_dir {
+            Some(d) => d.clone(),
+            None => return usage_err("--upload needs --rec: there is nothing to upload"),
+        };
+        // The token may also come from the environment, so it does not have to
+        // appear in this process's argv where any local user can read it.
+        if upload_token.is_empty() {
+            if let Ok(t) = std::env::var("CAMRTSP_UPLOAD_TOKEN") {
+                upload_token = t.trim().to_string();
+            }
+        }
+        let ucfg = upload::UpConfig {
+            base_url: upload_url.clone(),
+            token: upload_token.clone(),
+            max_bytes_per_run: upload_max,
+            ..Default::default()
+        };
+        // Validate the URL now, so a typo fails at startup and not at 3 a.m.
+        {
+            let probe = upload::Uploader::new(&dir, ucfg.clone());
+            if let Err(e) = probe.check_endpoint() {
+                return usage_err(&format!("--upload: {e}"));
+            }
+        }
+        eprintln!(
+            "camrtsp: uploading from {} to {} every {}s (max {} B/pass{})",
+            dir.display(),
+            redact_url(&upload_url),
+            upload_every,
+            upload_max,
+            if upload_token.is_empty() { ", NO TOKEN" } else { "" }
+        );
+        std::thread::Builder::new()
+            .name("upload".into())
+            .spawn(move || upload_loop(dir, ucfg, Duration::from_secs(upload_every)))
             .ok();
     }
 
@@ -321,6 +427,38 @@ fn parse_bytes(s: &str) -> Option<u64> {
 /// behind, `Hub` drops the oldest history and this resyncs on a keyframe rather
 /// than trying to catch up, because a recording is worth more than a complete
 /// one.
+/// Batch uploads, one pass per interval. Passes are deliberately not
+/// back-to-back: on a metered LTE link the camera's own stream has priority.
+fn upload_loop(dir: PathBuf, cfg: upload::UpConfig, every: Duration) {
+    loop {
+        std::thread::sleep(every);
+        let mut u = upload::Uploader::new(&dir, cfg.clone());
+        match u.upload_pending() {
+            Ok(rep) => {
+                if rep.considered > 0 || !rep.failed.is_empty() || rep.deleted > 0 {
+                    eprintln!("camrtsp: {}", rep.summary());
+                }
+                for f in &rep.failed {
+                    eprintln!("camrtsp: upload kept {}: {}", f.name, f.message);
+                }
+            }
+            Err(e) => eprintln!("camrtsp: upload pass: {}", e),
+        }
+    }
+}
+
+/// `https://user:pass@host/...` must not reach a log file. Tokens ride in a
+/// header here, not the URL, but a pasted URL can still carry credentials.
+fn redact_url(url: &str) -> String {
+    match url.split_once("://") {
+        Some((scheme, rest)) => match rest.split_once('@') {
+            Some((_, host)) => format!("{scheme}://…@{host}"),
+            None => url.to_string(),
+        },
+        None => url.to_string(),
+    }
+}
+
 fn tap(src: Arc<dyn source::VideoSource>, rec_dir: Option<&std::path::Path>,
        quota: u64, rec_always: bool, motion_log: bool) {
     let mut det = motion::Detector::new(src.info());
