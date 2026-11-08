@@ -57,7 +57,7 @@ exist because the board has no packet capture.
 | TLS 1.2 client works, certificates verified | `tlsprobe` on firefly: `basestar.ackl.me`, `git.basestar.tech`, `cloudflare.com`, `www.google.com`, `letsencrypt.org` all `verified via TLSv1.2` with the embedded roots; a self-signed peer is rejected (`-0x2700`) |
 | …on ARMv5TE, soft-float, 64 MB | `camrtsp tlsprobe basestar.ackl.me` **on the board**: `TLSv1.2 TLS-ECDHE-ECDSA-WITH-CHACHA20-POLY1305-SHA256 (6 roots embedded)` |
 | HTTP-over-TLS to the receiver | host: 7.7 MB segment uploaded, sha256 echoed, local copy deleted; received sidecar intact (902 AUs, 20 keyframes, 1280x720, 60066 ms) |
-| Receiving service | 23 files / 71 MB in `/srv/storage/cam/rec`, per-file sha256 in `journalctl -u camingest` |
+| Receiving service | 104 files / 182 MB in `/srv/storage/cam/rec` (still growing), per-file sha256 in `journalctl -u camingest` |
 | Upload from the camera itself | on the board over LAN HTTP: `upload: 29 considered, 3 uploaded (8388608 B, 0 resumed), 3 deleted, 0 failed, capped` |
 | The public leg: camera → Cloudflare → tunnel → Caddy → receiver | **run 2026-11-08.** Board: `tlsprobe liu.ackl.me` → `verified via TLSv1.2 …CHACHA20-POLY1305-SHA256 (6 roots embedded)`. Camera: `upload: 1 considered, 1 uploaded (1235619 B, 0 resumed), 1 deleted, 0 failed`. Receiver journal: `upload 20261108-234011.h264 video 1235264 bytes sha256 0640f73f…` |
 | No public IP anywhere in the path | `liu.ackl.me` resolves to Cloudflare anycast (104.21.92.207); tunnel and camera both dial out; nothing is port-forwarded |
