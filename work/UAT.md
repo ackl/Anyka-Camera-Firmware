@@ -339,6 +339,7 @@ tools/uat --json >> ~/lab/anyka/work/uat-runs.jsonl
 | Date | Journey | Result | Evidence / notes |
 |---|---|---|---|
 | 2026-11-08 23:46 | J0 preflight | pass | 15 ok, 1 warn (`no upload line yet` — 4 min into a 300 s cadence), 1280x720@15, receiver 52 files/179 MB, edge 401/405 |
+| 2026-11-08 23:48 | J0, after a real pass | pass | `upload: 2 considered, 2 uploaded (1028659 B), 2 deleted, 0 failed`; card 2→0 segments, receiver 52→54 files — the deployed 300 s cadence, over the public edge, unassisted |
 | | J1 cold boot | | |
 | | J2 live view | | |
 | | J3 motion → homelab | | |

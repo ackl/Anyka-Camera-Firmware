@@ -60,7 +60,7 @@ echo "REC_JSON=$(ls /mnt/Factory/rec/rec/*.json 2>/dev/null | wc -l)"
 echo "REC_BYTES=$(du -sk /mnt/Factory/rec/rec 2>/dev/null | awk '{print $1}')"
 echo "NEWEST=$(ls -t /mnt/Factory/rec/rec/*.h264 2>/dev/null | head -1)"
 echo "LOG_UPLOAD_BEGIN"
-grep -E 'camrtsp: upload:' /tmp/camrtsp.log 2>/dev/null | tail -2
+grep -E 'camrtsp: upload' /tmp/camrtsp.log 2>/dev/null | tail -3
 echo "LOG_UPLOAD_END"
 echo "LOG_MOTION_BEGIN"
 grep -E 'camrtsp: (motion|rec)' /tmp/camrtsp.log 2>/dev/null | tail -2
