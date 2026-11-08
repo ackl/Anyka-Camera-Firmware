@@ -322,6 +322,31 @@ To keep it running: `tools/rust/camweb/camweb.service` is a user unit
 (`systemctl --user enable --now camweb`). ufw on firefly defaults to DROP, so the
 port needs one hand-added rule: `sudo ufw allow 8090/tcp`.
 
+## UAT — the journey harness (2026-11-08)
+
+`tools/uat` answers "is this thing actually working, right now" in one command,
+read-only, from firefly: board reachability, clock, boot LED guard, stock `rtsp`,
+`camrtsp`, `telnetd`/`httpd`, `ingest.url` + token, last upload pass, motion state,
+a 3 s capture from `:8554`, the receiver's file count/bytes/freshness, and the
+public edge's 401/405. It prints `ok`/`warn`/`FAIL` per line and, at the end, what
+to fix first.
+
+    tools/uat                        # everything, ~15 s
+    tools/uat --no-live              # skip the capture, ~5 s
+    tools/uat --json                 # JSON, for a run log
+    tools/uat --expect-upload=600    # wait for a *new* receiver file
+
+`warn last upload pass — none yet` is normal for the first 300 s after `camrtsp`
+starts (`--upload-every`). `FAIL` on `board reachable` is *expected* once the
+camera is offsite on LTE — there is no inbound path by design; everything else
+should still pass from the homelab.
+
+The journeys it measures, who has to do what by hand, the acceptance criteria and
+the results table live in **`work/UAT.md`**. Read that before running any of it:
+several journeys need a person at the camera or the power socket, and J6 is
+designed to find a real bug (`rec.rs`'s quota eviction does not know what has been
+uploaded).
+
 ## Tooling
 
 `cam` runs shell commands on the camera over telnet :2323 (`cam 'cmd'`,

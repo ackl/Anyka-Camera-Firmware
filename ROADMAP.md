@@ -106,6 +106,25 @@ Audio levels are by ear, not meters (the mic saturates): **−40 dBFS = comforta
 > panel's `boot40` button has been judged by ear; if that is audible, the fix is
 > placement/timing, not level.
 
+## UAT — accepting it as a product (2026-11-08)
+
+The pieces work; what has not been done is the thing a person does with it. `tools/uat`
+is the measurement half (one read-only command: board, live video, receiver, public
+edge, PASS/WARN/FAIL). The human half — unplug it, wave at it, take it offsite — is
+`work/UAT.md`: nine journeys (J0 preflight … J9 exposure) mapped to eight acceptance
+criteria, with the exact log lines, the arithmetic that says a busy hour records 4–5×
+faster than the uplink can carry, and a results table.
+
+Two blockers UAT names rather than discovers late:
+
+* **nothing distinguishes quiet from dead.** Offsite there is no inbound path, so
+  silence on the receiver means either "nothing happened" or "the camera died". The
+  fix is cheap — the uploader `PUT`s a small `status.json` every pass whether or not
+  anything was recorded — and it is the one thing standing between J7 and a real pass.
+* **the quota can evict un-uploaded footage.** `rec.rs`'s `evict()` protects the open
+  segment and the newest finished one, not "what has not been confirmed by the
+  receiver". J6 tests this deliberately with a small quota against a dead receiver.
+
 ## Next (small, unblocked, no flash)
 
 1. ~~**Boot-state LED guard**~~ — **proven by a real cold boot 2026-10-25 10:37 host

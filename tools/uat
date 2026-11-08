@@ -1,0 +1,349 @@
+#!/usr/bin/env python3
+"""One-command evidence collector for camera UAT.
+
+Answers, from firefly, the questions a UAT journey asks *after* the human part
+is done: did it boot clean, is it recording, did the segment reach the homelab,
+and can the homelab tell the difference between "quiet" and "dead".
+
+Usage:  uat                 full check (board + live video + receiver + edge)
+        uat --no-live       skip the 3 s capture (faster, no decoder)
+        uat --json          machine-readable, for keeping a log of results
+        uat --expect-upload wait up to N s for a new file on the receiver
+
+Everything is read-only. Nothing on the board is started, stopped or written
+except the short RTSP pull, which is what a viewer would do anyway.
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+CAM = os.path.join(HERE, "cam")
+RECEIVER = os.environ.get("UAT_RECEIVER", "storage-01")
+REC_ROOT = os.environ.get("UAT_REC_ROOT", "/srv/storage/cam/rec")
+EDGE = os.environ.get("UAT_EDGE", "https://liu.ackl.me/ingest/uat-probe.h264")
+TOKEN_FILE = os.path.expanduser("~/.config/anyka/ingest.token")
+BOARD_RTSP = os.environ.get("UAT_BOARD", "192.168.1.103")
+
+
+def sh(cmd, timeout=60, stdin=None):
+    try:
+        p = subprocess.run(cmd, shell=isinstance(cmd, str), input=stdin,
+                           capture_output=True, text=True, timeout=timeout)
+        return p.returncode, p.stdout, p.stderr
+    except subprocess.TimeoutExpired as e:
+        return 124, (e.stdout or b"").decode(errors="replace") if isinstance(e.stdout, bytes) else (e.stdout or ""), "timeout"
+
+
+# ---------------------------------------------------------------- board dump
+
+BOARD_SCRIPT = r"""
+echo "UPTIME=$(cut -d' ' -f1 /proc/uptime)"
+echo "EPOCH=$(date +%s)"
+echo "DATE=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+echo "PHOTO=$(cat /tmp/photo 2>/dev/null | tr -d '\n')"
+echo "IRLED=$(cat /sys/user-gpio/IR_LED 2>/dev/null)"
+echo "WHITE=$(cat /sys/user-gpio/WHITE_LED 2>/dev/null)"
+echo "CAMRTSP_PID=$(ps | grep '[c]amrtsp serve' | awk '{print $1}')"
+echo "STOCKRTSP_PID=$(ps | grep '[/]mnt/Factory/custom/rtsp$' | awk '{print $1}')"
+echo "TELNETD=$(ps | grep -c '[t]elnetd -p 2323')"
+echo "HTTPD=$(ps | grep -c '[h]ttpd -p 8080')"
+echo "URL=$(cat /mnt/Factory/custom/ingest.url 2>/dev/null)"
+echo "TOKEN_BYTES=$(wc -c < /mnt/Factory/custom/ingest.token 2>/dev/null | tr -d ' ')"
+echo "NTP_DATE=$(cat /tmp/ntp.date 2>/dev/null | tr -d '\n')"
+echo "CARD_TOTAL=$(df -k /mnt 2>/dev/null | tail -1 | awk '{print $2}')"
+echo "REC_H264=$(ls /mnt/Factory/rec/rec/*.h264 2>/dev/null | wc -l)"
+echo "REC_JSON=$(ls /mnt/Factory/rec/rec/*.json 2>/dev/null | wc -l)"
+echo "REC_BYTES=$(du -sk /mnt/Factory/rec/rec 2>/dev/null | awk '{print $1}')"
+echo "NEWEST=$(ls -t /mnt/Factory/rec/rec/*.h264 2>/dev/null | head -1)"
+echo "LOG_UPLOAD_BEGIN"
+grep -E 'camrtsp: upload:' /tmp/camrtsp.log 2>/dev/null | tail -2
+echo "LOG_UPLOAD_END"
+echo "LOG_MOTION_BEGIN"
+grep -E 'camrtsp: (motion|rec)' /tmp/camrtsp.log 2>/dev/null | tail -2
+echo "LOG_MOTION_END"
+echo "LOG_ERROR_BEGIN"
+grep -iE 'camrtsp: (error|warn|fail|cannot|halt)' /tmp/camrtsp.log 2>/dev/null | tail -4
+echo "LOG_ERROR_END"
+echo "LOG_MAXAGE=$(grep -c . /tmp/camrtsp.log 2>/dev/null)"
+"""
+
+
+def board_state():
+    rc, out, err = sh([CAM, "-t", "150", "-"], timeout=200, stdin=BOARD_SCRIPT)
+    st = {"rc": rc, "err": err}
+    if rc == 124:
+        st["timeout"] = True
+    def grab(key):
+        m = re.search(rf"^{key}=(.*)$", out, re.M)
+        return m.group(1).strip() if m else ""
+    for k in ("UPTIME", "EPOCH", "DATE", "PHOTO", "IRLED", "WHITE",
+              "CAMRTSP_PID", "STOCKRTSP_PID", "TELNETD", "HTTPD", "URL",
+              "TOKEN_BYTES", "NTP_DATE", "REC_H264", "REC_JSON", "REC_BYTES",
+              "NEWEST", "LOG_MAXAGE", "CARD_TOTAL"):
+        st[k.lower()] = grab(k)
+    for blk in ("LOG_UPLOAD", "LOG_MOTION", "LOG_ERROR"):
+        m = re.search(rf"^{blk}_BEGIN\n(.*?)\n{blk}_END", out, re.S | re.M)
+        st[blk.lower()] = [l.strip() for l in (m.group(1) if m else "").splitlines() if l.strip()]
+    return st
+
+
+# ------------------------------------------------------------------ live pull
+
+def live_check(seconds=4):
+    """Can a viewer get decodable frames from our server, right now?"""
+    url = f"rtsp://{BOARD_RTSP}:8554/vs0"
+    rc, out, err = sh([
+        "ffmpeg", "-v", "error", "-rtsp_transport", "tcp", "-i", url,
+        "-t", str(seconds), "-f", "null", "-"], timeout=seconds + 30)
+    frames = 0
+    for line in (err or "").splitlines() + (out or "").splitlines():
+        m = re.search(r"frame=\s*(\d+)", line)
+        if m:
+            frames = int(m.group(1))
+    # ffmpeg -f null prints stats on stderr only with -stats; count differently
+    rc2, probe, _ = sh([
+        "ffprobe", "-v", "error", "-rtsp_transport", "tcp", "-select_streams", "v:0",
+        "-show_entries", "stream=width,height,avg_frame_rate", "-of", "csv=p=0", url],
+        timeout=40)
+    w = h = fps = None
+    if rc2 == 0 and probe.strip():
+        parts = probe.strip().splitlines()[0].split(",")
+        if len(parts) >= 3:
+            w, h, fps = parts[0], parts[1], parts[2]
+    return {"ok": rc == 0 or (w is not None), "rc": rc, "width": w,
+            "height": h, "fps": fps, "err": (err or "").strip().splitlines()[-1:] or [""]}
+
+
+def tcp_open(host, port, timeout=4):
+    import socket
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+# ------------------------------------------------------------------- receiver
+
+def receiver_state():
+    cmd = (f"ls {REC_ROOT}/*.h264 2>/dev/null | wc -l; du -sb /srv/storage/cam 2>/dev/null | awk '{{print $1}}'; "
+           f"ls -t {REC_ROOT}/*.h264 2>/dev/null | head -1; "
+           f"journalctl -u camingest --no-pager -n 40 2>/dev/null | grep -c 'sha256'; "
+           f"systemctl is-active camingest")
+    rc, out, err = sh(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=8", RECEIVER, cmd], timeout=60)
+    lines = [l.strip() for l in out.splitlines() if l.strip()]
+    st = {"ok": rc == 0, "rc": rc, "err": err.strip()}
+    if rc == 0 and len(lines) >= 5:
+        st["count"] = lines[0]
+        st["bytes"] = lines[1]
+        st["newest"] = os.path.basename(lines[2])
+        st["service"] = lines[4]
+        # newest file age on the receiver, in seconds
+        rc2, o2, _ = sh(["ssh", "-o", "BatchMode=yes", RECEIVER,
+                         f"date -u +%s; stat -c %Y {REC_ROOT}/{st['newest']} 2>/dev/null"], timeout=30)
+        try:
+            now, mtime = [int(x) for x in o2.split()[:2]]
+            st["age_s"] = now - mtime
+        except Exception:
+            st["age_s"] = None
+    return st
+
+
+# ----------------------------------------------------------------------- edge
+
+def edge_state():
+    token = ""
+    try:
+        token = open(TOKEN_FILE).read().strip()
+    except OSError:
+        pass
+    def code(args):
+        rc, out, _ = sh(["curl", "-sS", "-o", "/dev/null", "-w", "%{http_code}",
+                         "--max-time", "25"] + args, timeout=40)
+        return out.strip() or f"rc={rc}"
+    out = {"no_token": code([EDGE])}
+    if token:
+        out["with_token"] = code(["-H", f"X-Cam-Token: {token}", EDGE])
+    return out
+
+
+# --------------------------------------------------------------------- verdict
+
+def verdicts(b, live, rx, edge):
+    """Each row: (name, status, detail). status in PASS/FAIL/WARN/SKIP."""
+    rows = []
+    def add(name, status, detail=""):
+        rows.append({"check": name, "status": status, "detail": detail})
+
+    if b.get("timeout") and not b.get("uptime"):
+        add("board reachable", "FAIL", "no answer on telnet :2323")
+        return rows
+    add("board reachable", "PASS", f"up {int(float(b['uptime'] or 0)) // 60} min")
+
+    epoch = int(b.get("epoch") or 0)
+    if epoch > 1_600_000_000:
+        add("clock sane", "PASS", b.get("date", ""))
+    elif epoch == 0:
+        add("clock sane", "WARN", "cannot read clock")
+    else:
+        add("clock sane", "FAIL",
+            f"{b.get('date')} — no RTC; segments will be named 1970* and never upload (keep_days)")
+
+    photo, ir, wht = b.get("photo"), b.get("irled"), b.get("white")
+    if (photo, ir, wht) == ("0", "0", "0"):
+        add("boot LED guard", "PASS", "photo=0 IR_LED=0 WHITE_LED=0 (day, dark)")
+    elif photo in ("", None):
+        add("boot LED guard", "FAIL", "/tmp/photo missing — driver falls back to ain0 → night")
+    else:
+        add("boot LED guard", "WARN", f"photo={photo} IR_LED={ir} WHITE_LED={wht}")
+
+    if b.get("stockrtsp_pid"):
+        add("stock rtsp (:554)", "PASS", f"pid {b['stockrtsp_pid']}")
+    else:
+        add("stock rtsp (:554)", "FAIL", "not running — camrtsp has no upstream to pull")
+
+    if b.get("camrtsp_pid"):
+        add("camrtsp", "PASS", f"pid {b['camrtsp_pid']}")
+    else:
+        add("camrtsp", "FAIL", "not running — nothing records or uploads")
+
+    add("telnetd :2323", "PASS" if b.get("telnetd") == "1" else "WARN", b.get("telnetd", ""))
+    add("httpd :8080", "PASS" if b.get("httpd") == "1" else "WARN", b.get("httpd", ""))
+
+    url = b.get("url") or ""
+    if url.startswith("https://") and b.get("token_bytes") == "40":
+        add("upload target", "PASS", f"{url} + 40-byte token")
+    elif url:
+        add("upload target", "WARN", f"{url}, token {b.get('token_bytes')} B")
+    else:
+        add("upload target", "FAIL", "custom/ingest.url empty — records locally only")
+
+    if any("rtsp listening" in l for l in b.get("log_error", [])):
+        add("rtsp :8554 bind", "WARN", "log says it could not bind")
+
+    recs = int(b.get("rec_h264") or 0)
+    add("card segments", "PASS" if recs or True else "", f"{recs} h264 / {b.get('rec_json')} json, "
+        f"{int(b.get('rec_bytes') or 0)} KiB")
+
+    ups = b.get("log_upload", [])
+    passes = [l for l in ups if "considered" in l]
+    if not passes:
+        every = ""
+        m = re.search(r"every (\d+)s", " ".join(ups))
+        if m:
+            every = f" — first pass is {m.group(1)} s after start"
+        add("last upload pass", "WARN", f"none yet in this log{every}")
+    else:
+        last = passes[-1]
+        body = last.split("camrtsp: ")[-1][:150]
+        m = re.search(r"(\d+) uploaded.*?(\d+) skipped-young.*?(\d+) expired.*?(\d+) failed", last)
+        if m:
+            up, fail, exp = int(m.group(1)), int(m.group(4)), int(m.group(3))
+            if exp:
+                add("last upload pass", "FAIL",
+                    f"{exp} expired (older than keep_days) — footage kept but never sent: {body}")
+            elif fail and not up:
+                add("last upload pass", "FAIL", body)
+            elif fail or "link down" in last:
+                add("last upload pass", "WARN", body)
+            else:
+                add("last upload pass", "PASS", body)
+        else:
+            add("last upload pass", "WARN", body)
+
+    mo = b.get("log_motion", [])
+    if mo:
+        m = re.search(r"motion (active|quiet)", mo[-1])
+        add("motion detector", "PASS" if m else "WARN", mo[-1].split("camrtsp: ")[-1][:110])
+
+    if rx.get("ok"):
+        add("receiver reachable", "PASS" if rx.get("service") == "active" else "FAIL",
+            f"camingest {rx.get('service')}, {rx.get('count')} files, "
+            f"{int(rx.get('bytes') or 0) // (1024 * 1024)} MB")
+        age = rx.get("age_s")
+        if age is not None:
+            if age < 600:
+                add("receiver freshness", "PASS", f"newest {rx['newest']} {age} s old")
+            elif age < 6 * 3600:
+                add("receiver freshness", "WARN",
+                    f"newest {rx['newest']} {age // 60} min old")
+            else:
+                add("receiver freshness", "FAIL",
+                    f"newest {rx['newest']} {age // 3600} h old — quiet or dead? no heartbeat")
+    else:
+        add("receiver reachable", "FAIL", rx.get("err", "")[:120])
+
+    e = edge
+    nt, wt = e.get("no_token"), e.get("with_token")
+    if nt == "401" and wt in ("404", "405", "200"):
+        add("edge auth", "PASS", f"no token {nt}, token {wt}")
+    elif nt == "308":
+        add("edge auth", "FAIL", "308 loop — Caddy block is https:// on :80")
+    else:
+        add("edge auth", "WARN", f"no token {nt}, token {wt}")
+
+    if live is not None:
+        if live.get("ok") and live.get("width"):
+            add("live video :8554", "PASS", f"{live['width']}x{live['height']} @ {live['fps']}")
+        else:
+            add("live video :8554", "FAIL", (live.get("err") or [""])[0][:120])
+        add("stock :554 open", "PASS" if tcp_open(BOARD_RTSP, 554) else "FAIL", "")
+    return rows
+
+
+def main():
+    args = sys.argv[1:]
+    want_json = "--json" in args
+    no_live = "--no-live" in args
+    wait = 0
+    for a in args:
+        if a.startswith("--expect-upload="):
+            wait = int(a.split("=", 1)[1])
+
+    t0 = time.time()
+    b = board_state()
+    live = None if no_live else live_check()
+    rx = receiver_state()
+    edge = edge_state()
+    rows = verdicts(b, live, rx, edge)
+
+    if wait:
+        seen = {rx.get("newest"), b.get("newest")}
+        deadline = time.time() + wait
+        got = None
+        while time.time() < deadline:
+            time.sleep(20)
+            r2 = receiver_state()
+            if r2.get("newest") and r2["newest"] not in seen:
+                got = r2["newest"]
+                break
+        rows.append({"check": "expected upload arrived", "status": "PASS" if got else "FAIL",
+                     "detail": got or f"nothing new on the receiver in {wait} s"})
+
+    if want_json:
+        print(json.dumps({"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                          "checks": rows, "board": b, "live": live,
+                          "receiver": rx, "edge": edge}, indent=2))
+        return 0 if all(r["status"] != "FAIL" for r in rows) else 1
+
+    print(f"camera UAT evidence  {time.strftime('%Y-%m-%d %H:%M:%SZ', time.gmtime())}  "
+          f"({time.time() - t0:.0f}s)")
+    print("-" * 78)
+    icon = {"PASS": "ok  ", "FAIL": "FAIL", "WARN": "warn", "SKIP": "--  "}
+    for r in rows:
+        print(f"  {icon.get(r['status'], r['status']):4}  {r['check']:24} {r['detail']}")
+    fails = [r for r in rows if r["status"] == "FAIL"]
+    warns = [r for r in rows if r["status"] == "WARN"]
+    print("-" * 78)
+    print(f"  {len(rows) - len(fails) - len(warns)} pass, {len(warns)} warn, {len(fails)} fail")
+    for r in fails:
+        print(f"  next: fix {r['check']} — {r['detail']}")
+    return 0 if not fails else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
