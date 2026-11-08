@@ -59,6 +59,10 @@ re-derive the patched binaries.
 | Motors | `motorctl AXIS DIR STEPS SPEED`, bounded, no end-stops | `analysis/motor-interface.md` |
 | File transfer | `tools/put` :9996, `tools/get` :9995 | `tools/README.md` |
 | Browser panel | `tools/camweb serve` -> `http://firefly:8090/` — MJPEG live view, PTZ, LEDs, day/night, pins. Rust RTSP client + Rust board telnet; ffmpeg only decodes H.264 to JPEG | `tools/README.md` -> "Live panel" |
+| Own RTSP server | `camrtsp serve --source client:127.0.0.1:554/vs0` on the board: re-serves `/vs0` on :8554, motion detector, motion-gated recorder, batch uploader | `analysis/offsite-ingest.md` |
+| Motion-gated recording | segments to `/mnt/Factory/rec/rec/NAME.h264` + `.json` sidecar, 60 s, 2 G quota; fires on movement in frame, closes on rotation | `analysis/offsite-ingest.md` |
+| Offsite upload | `camrtsp --upload` -> TLS 1.2 (mbedTLS on ARMv5TE) -> Caddy -> `camingest` on storage-01 `/srv/storage/cam`; local file deleted only after the receiver echoes the sha256 | 23 files / 71 MB received; `analysis/offsite-ingest.md` |
+| Boot clock | `ntpd -q -p 192.168.1.254` in `config.sh` before the recorder names anything (no RTC: it booted at 1970) | `analysis/offsite-ingest.md` |
 
 Audio levels are by ear, not meters (the mic saturates): **−40 dBFS = comfortable**,
 −30 = still loud, −20 = emergency only. Deployed `audio/cue.pcm` (880→1174 Hz,

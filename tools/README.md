@@ -428,3 +428,45 @@ keyframe of a burst in measurement, which made a joining client unable to decode
 Not yet wired: `upload.rs` (resumable batch push to homelab, protocol documented in the
 module) and the C encoder shim — see `work/offsite-2026-11-14.md` and
 `analysis/encoder-ownership.md`.
+
+## Offsite ingest: TLS, the receiver, and the uploader (2026-11-08)
+
+Full story in `analysis/offsite-ingest.md`. The operational bits:
+
+**On the camera** — `config.sh` now syncs the clock (`ntpd -q -p 192.168.1.254`;
+no RTC, it used to boot at 1970) and starts:
+
+    CAMRTSP_UPLOAD_TOKEN=$(cat /mnt/Factory/custom/ingest.token) \
+    /mnt/Factory/custom/camrtsp serve --source client:127.0.0.1:554/vs0 \
+        --listen 0.0.0.0:8554 --rec /mnt/Factory/rec --rec-quota 2G --motion-log \
+        --upload "$(cat /mnt/Factory/custom/ingest.url)" --upload-every 300
+
+Two files on the card, neither in git: `custom/ingest.url` (one URL — the LAN
+receiver today, `https://cam.ackl.me/ingest` once the tunnel has the hostname) and
+`custom/ingest.token` (0600). The token travels in the environment, not argv, so it
+does not show up in `ps`. Old config kept as `Factory/config.before-offsite.sh`.
+
+**TLS** — `camrtsp tlsprobe HOST[:PORT]` answers "does TLS work from this box,
+now" with the negotiated version and cipher; run it on the board before blaming
+anything else. `CAMTLS_DEBUG=1` gives mbedTLS's handshake trace (the only way to
+see a peer's alert code without packet capture). `CAMTLS_CA=/path/roots.pem`
+overrides the embedded bundle — used for the LAN Caddy's private CA.
+
+    tools/tls/build.sh all      # mbedTLS 2.28.8 + shim -> libcamtls.a (host + armv5te)
+    tools/tls/build.sh bundle   # regenerate ca-bundle.pem from ca-certificates.crt
+
+`tools/remote-build.sh camrtsp` ships `tools/tls/out` to build-01 automatically
+(`TLS_ROOT`). Trap worth knowing: `mbedtls_x509_crt_parse` only sees PEM if the
+buffer ends in NUL, which `include_bytes!` does not provide — the shim terminates
+it, so never call mbedtls with a Rust slice directly.
+
+**Receiver** — `camingest` on storage-01 (VM105), systemd:
+
+    /usr/local/bin/camingest serve --listen 0.0.0.0:8080 \
+        --root /srv/storage/cam --prefix /ingest     # token: /etc/camingest.env
+
+Crate in `tools/rust/camingest` (branch `ingest`, not merged). It refuses to start
+with an empty token and never treats a `.part` as a segment. Caddy on
+edge-proxy-01 terminates TLS: `https://cam.ackl.me { tls internal; reverse_proxy
+192.168.1.240:8080 }` — appended to `/opt/edge/caddy/Caddyfile`, whose previous
+version is kept alongside as `Caddyfile.before-cam-ingest-*`.

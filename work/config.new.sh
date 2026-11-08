@@ -43,5 +43,37 @@ echo 0 > /sys/user-gpio/WHITE_LED
 
 # Disabled automatic homing: /mnt/Factory/custom/ptz_daemon &
 sleep 30
+
+# Clock.  There is no RTC on this board: it boots at 1970-01-01, which named
+# every recording 19700101-*.  The house router answers NTP; the server is a
+# literal IP because DNS here is unreliable (pool.ntp.org does not resolve,
+# though 8.8.8.8 pings fine).  Backgrounded so a dead NTP server can never stop
+# the video, and stepped before the recorder names anything.
+# Note: ntpd exits 0 even when it fails to set the clock, and busybox has no
+# `timeout`; check `date`, not the exit code.
+( ntpd -q -p 192.168.1.254 >/tmp/ntp.log 2>&1; date >/tmp/ntp.date ) &
+sleep 2
+
 /mnt/Factory/custom/rtsp &
+
+# Our own server on top of the stock encoder: re-serves /vs0 on :8554, records
+# motion-gated segments to the card, and pushes them to the homelab.  The
+# upstream is the stock rtsp above, so this must start after it.
+#
+# The ingest URL lives in a file so switching between the LAN receiver and the
+# public Cloudflare endpoint (https://cam.ackl.me/ingest) needs no edit here.
+# The token comes from the environment, not argv, so it stays out of `ps`.
+# Both are optional: without them it still records, it just never uploads.
+INGEST_URL=$(cat /mnt/Factory/custom/ingest.url 2>/dev/null)
+if [ -x /mnt/Factory/custom/camrtsp ] && [ -n "$INGEST_URL" ]; then
+    CAMRTSP_UPLOAD_TOKEN=$(cat /mnt/Factory/custom/ingest.token 2>/dev/null) \
+    /mnt/Factory/custom/camrtsp serve \
+        --source client:127.0.0.1:554/vs0 \
+        --listen 0.0.0.0:8554 \
+        --rec /mnt/Factory/rec --rec-quota 2G \
+        --motion-log \
+        --upload "$INGEST_URL" --upload-every 300 \
+        >/tmp/camrtsp.log 2>&1 &
+fi
+
 /mnt/Factory/custom/vpn/vpn.sh &
