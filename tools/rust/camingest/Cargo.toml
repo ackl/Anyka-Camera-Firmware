@@ -1,0 +1,21 @@
+[package]
+name = "camingest"
+version = "0.1.0"
+edition = "2021"
+description = "Receiving end of the AK3918 camera's batch uploader (cam-ingest v1, no crates)"
+
+# No dependencies, ever: pure std. One rustc invocation builds it (build.sh),
+# which is the same rule the camera-side crates follow — the difference is that
+# this one runs on x86_64 at home, not on the board.
+
+[[bin]]
+name = "camingest"
+path = "src/main.rs"
+
+# The tests drive the real server over loopback sockets, so the test binary
+# needs `std::panic::catch_unwind` to work: do NOT set panic = "abort" here.
+[profile.release]
+opt-level = 2
+lto = true
+codegen-units = 1
+strip = true
