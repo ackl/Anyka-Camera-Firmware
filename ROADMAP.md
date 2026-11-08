@@ -235,6 +235,22 @@ restored from the tar above, the patch goes with it — re-apply with
 `work/irpatch.py --apply`, push with `tools/put`, restart `rtsp`. Details,
 offsets and evidence: `analysis/ir-daynight.md` → **Fixed**.
 
+## Offsite deployment (2026-11-14) — current priority
+
+The cameras are going offsite behind an LTE hotspot, so the target is **our own RTSP
++ motion-gated recording + batch upload**, not LAN streaming. Measured: 720p is
+0.97 Mbps ≈ 10.5 GB/day, the 640x480 sub stream 0.12 Mbps ≈ 1.3 GB/day, so the uplink
+can only carry motion events; CGNAT means the camera dials out and homelab never
+reaches in.
+
+`camrtsp` now serves a live stream from an upstream RTSP source
+(`--source client:HOST/PATH`), detects motion from the compressed stream, and records
+keyframe-aligned segments to the card with pre-roll and a quota. Details, numbers and
+what is still missing: `work/offsite-2026-11-14.md`. Encoder ownership (why the stock
+`rtsp` still runs, and the verified crosstool route off it):
+`analysis/encoder-ownership.md`. **Blocked on the board being powered** — every
+result so far is host-side.
+
 ## Not on the roadmap
 Flashing anything, u-boot, replacing the stock kernel, or any change that needs the
 board's flash to be rewritten. Stock backups stay untouched.

@@ -398,3 +398,33 @@ Two measurement traps on the SD card:
 Also: `dmesg | grep "not inited"` proves nothing here — `printk` is `3 4 1 7`, so
 `ak_print` output never reaches dmesg. To check the day/night path on a running
 `rtsp`, look for a **`PS_switch`** thread in `/proc/$PID/task/*/comm`.
+
+## camrtsp — our own RTSP server (2026-11-14)
+
+Clean-room Rust, no crates, ARMv5TE static (`tools/rust/camrtsp`, built on `build-01`
+with `tools/remote-build.sh camrtsp`). It is the program that is meant to replace the
+stock `ak_rtsp_demo` + nginx pair when the cameras go offsite.
+
+    camrtsp serve --listen 0.0.0.0:554 --source client:127.0.0.1:554/vs0 \
+                  --rec /mnt --rec-quota 8G --motion-log
+
+* `--source client:HOST[:PORT][/PATH]` pulls H.264 + a-law from an upstream RTSP
+  server and re-serves it. That is the **live path today**: the stock `rtsp` still owns
+  the hardware encoder, but clients only ever talk to us. `replay:`, `pump:` and
+  `synth:` exist for testing; `pump:` waits for the encoder shim.
+* `--rec DIR` writes motion-triggered segments to `DIR/rec/` — `YYYYMMDD-HHMMSS.h264`
+  (Annex-B, starts on a keyframe) plus a `.json` sidecar, 3 s pre-roll, 3 s post-roll,
+  60 s max, 8 GiB quota evicting oldest first.
+* `--motion-log` prints the detector's baseline and state once a second; `--rec-always`
+  records regardless of motion, for tuning the detector on real footage.
+* Motion detection is compressed-domain (`motion.rs`): AU size versus the median of the
+  last 30 P-frames, with an absolute floor, decay, 5 s hold and slow scene adoption. It
+  detects **change**, not people — no vendor `libmpi_md.so` was ever shipped on this
+  device and decoding 720p on an ARM926EJ-S is not affordable.
+
+`source::Hub` is a 48-frame ring, not a single slot: the single slot dropped every
+keyframe of a burst in measurement, which made a joining client unable to decode.
+
+Not yet wired: `upload.rs` (resumable batch push to homelab, protocol documented in the
+module) and the C encoder shim — see `work/offsite-2026-11-14.md` and
+`analysis/encoder-ownership.md`.
