@@ -7,6 +7,7 @@
 use crate::media::{
     find_sps_pps, is_vcl, nal_type, split_annexb, AudioFrame, AudioInfo, StreamInfo, VideoFrame,
 };
+use std::collections::VecDeque;
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -20,6 +21,12 @@ pub trait VideoSource: Send + Sync {
 
     /// Most recent frame, if any (never blocks).
     fn latest(&self) -> Option<Arc<VideoFrame>>;
+
+    /// Has the source finished for good? Default: never. The RTSP session
+    /// ends a stream on this instead of guessing from a fast `next()` return.
+    fn ended(&self) -> bool {
+        false
+    }
 
     /// Audio access unit newer than `after_seq`. Default: none configured.
     fn next_audio(&self, _after_seq: u64, _timeout: Duration) -> Option<Arc<AudioFrame>> {
@@ -40,20 +47,34 @@ pub struct Hub {
 }
 
 struct Inner {
-    frame: Option<Arc<VideoFrame>>,
-    audio: Option<Arc<AudioFrame>>,
+    /// Recent frames, oldest first. A ring, not a single slot: upstream
+    /// delivery is bursty (an IDR arrives as ~31 FU-A packets, and the next
+    /// P-frame often sits in the same TCP read) and a reader that woke between
+    /// two publishes used to lose the first of them. Measured end-to-end, that
+    /// dropped all 8 keyframes of 375 access units and left a joiner unable to
+    /// decode. `next(after_seq)` now walks the ring in order.
+    frames: VecDeque<Arc<VideoFrame>>,
+    frame_bytes: usize,
+    audio: VecDeque<Arc<AudioFrame>>,
     published: u64,
     audio_published: u64,
     running: bool,
 }
+
+/// Deepest history kept for a lagging reader. The RTSP side already buffers 32
+/// frames per session and one 720p access unit is ~8 KiB, so this is a few MiB.
+const RING_FRAMES: usize = 48;
+const RING_BYTES: usize = 4 << 20;
+const AUDIO_RING: usize = 64;
 
 impl Hub {
     pub fn new(info: Arc<StreamInfo>) -> Arc<Hub> {
         Arc::new(Hub {
             info,
             inner: Mutex::new(Inner {
-                frame: None,
-                audio: None,
+                frames: VecDeque::new(),
+                frame_bytes: 0,
+                audio: VecDeque::new(),
                 published: 0,
                 audio_published: 0,
                 running: true,
@@ -67,7 +88,7 @@ impl Hub {
         let mut g = self.inner.lock().unwrap();
         f.seq = g.published;
         g.published += 1;
-        g.frame = Some(Arc::new(f));
+        push_frame(&mut g, Arc::new(f));
         drop(g);
         self.cv.notify_all();
     }
@@ -78,7 +99,7 @@ impl Hub {
         if g.published <= f.seq {
             g.published = f.seq + 1;
         }
-        g.frame = Some(Arc::new(f));
+        push_frame(&mut g, Arc::new(f));
         drop(g);
         self.cv.notify_all();
     }
@@ -87,7 +108,10 @@ impl Hub {
         let mut g = self.inner.lock().unwrap();
         a.seq = g.audio_published;
         g.audio_published += 1;
-        g.audio = Some(Arc::new(a));
+        g.audio.push_back(Arc::new(a));
+        while g.audio.len() > AUDIO_RING {
+            g.audio.pop_front();
+        }
         drop(g);
         self.cv.notify_all();
     }
@@ -100,11 +124,51 @@ impl Hub {
         self.inner.lock().unwrap().running
     }
 
-    /// Tell any waiter that no more frames will arrive.
+    /// Tell any waiter that no more frames will arrive. Frames already in the
+    /// ring stay readable, so a session can still drain what it has.
     pub fn stop(&self) {
         self.inner.lock().unwrap().running = false;
         self.cv.notify_all();
     }
+}
+
+fn push_frame(g: &mut Inner, f: Arc<VideoFrame>) {
+    g.frame_bytes += f.len();
+    g.frames.push_back(f);
+    while g.frames.len() > RING_FRAMES || (g.frame_bytes > RING_BYTES && g.frames.len() > 1) {
+        if let Some(old) = g.frames.pop_front() {
+            g.frame_bytes -= old.len();
+        }
+    }
+}
+
+/// Oldest frame strictly newer than `after`.
+///
+/// If the reader fell far enough behind that frames were dropped, the first
+/// frame it can still be handed is a P-frame whose references are gone. Skip
+/// forward to the next keyframe in the ring instead — that is the only frame
+/// that decodes on its own. With no keyframe ahead, the oldest is returned and
+/// the caller decides.
+fn pick_frame(g: &Inner, after: u64) -> Option<Arc<VideoFrame>> {
+    if g.frames.is_empty() {
+        return None;
+    }
+    // NB: `after` is a *cursor*, not an index — a reader that has consumed
+    // frame 0 passes 0 and must still get frame 1, so 0 cannot be treated as
+    // "start of stream". A reader that has no cursor yet uses `latest()` (the
+    // session's video pump does exactly that on startup); sequence 0 itself is
+    // therefore only reachable through `latest()`.
+    let pos = g.frames.iter().position(|f| f.seq > after)?;
+    if g.frames[pos].seq == after.wrapping_add(1) {
+        return Some(g.frames[pos].clone());
+    }
+    // Gap: the reader fell off the ring, or it resumed from a stale number.
+    g.frames
+        .iter()
+        .skip(pos)
+        .find(|f| f.keyframe)
+        .cloned()
+        .or_else(|| Some(g.frames[pos].clone()))
 }
 
 impl VideoSource for Hub {
@@ -116,10 +180,8 @@ impl VideoSource for Hub {
         let deadline = Instant::now() + timeout;
         let mut g = self.inner.lock().unwrap();
         loop {
-            if let Some(f) = g.frame.as_ref() {
-                if f.seq > after_seq {
-                    return Some(f.clone());
-                }
+            if let Some(f) = pick_frame(&g, after_seq) {
+                return Some(f);
             }
             if !g.running {
                 return None;
@@ -134,17 +196,15 @@ impl VideoSource for Hub {
     }
 
     fn latest(&self) -> Option<Arc<VideoFrame>> {
-        self.inner.lock().unwrap().frame.clone()
+        self.inner.lock().unwrap().frames.back().cloned()
     }
 
     fn next_audio(&self, after_seq: u64, timeout: Duration) -> Option<Arc<AudioFrame>> {
         let deadline = Instant::now() + timeout;
         let mut g = self.inner.lock().unwrap();
         loop {
-            if let Some(a) = g.audio.as_ref() {
-                if a.seq > after_seq {
-                    return Some(a.clone());
-                }
+            if let Some(a) = g.audio.iter().find(|a| a.seq > after_seq) {
+                return Some(a.clone());
             }
             if !g.running {
                 return None;
@@ -156,6 +216,10 @@ impl VideoSource for Hub {
             let (ng, _) = self.cv.wait_timeout(g, deadline - now).unwrap();
             g = ng;
         }
+    }
+
+    fn ended(&self) -> bool {
+        !self.is_running()
     }
 }
 
@@ -395,5 +459,123 @@ mod tests {
     fn empty_source_times_out() {
         let hub = empty("vs0");
         assert!(hub.next(0, Duration::from_millis(50)).is_none());
+    }
+
+    // --- the ring: a burst must not lose frames, a lagging reader must
+    // resync on a keyframe instead of on a P-frame whose reference is gone ---
+
+    fn frame(seq: u64, keyframe: bool, bytes: usize) -> VideoFrame {
+        VideoFrame {
+            nals: vec![vec![if keyframe { 0x65 } else { 0x41 }; bytes]],
+            keyframe,
+            ts_ms: seq * 40,
+            seq,
+        }
+    }
+
+    fn test_info() -> Arc<StreamInfo> {
+        Arc::new(StreamInfo {
+            name: "vs0".into(),
+            sps: vec![0x67, 0x42],
+            pps: vec![0x68, 0xce],
+            width: 1280,
+            height: 720,
+            fps: 15,
+            audio: None,
+        })
+    }
+
+    fn hub_with(frames: &[(bool, usize)]) -> Arc<Hub> {
+        let hub = Hub::new(test_info());
+        for (i, (k, b)) in frames.iter().enumerate() {
+            let mut f = frame(i as u64, *k, *b);
+            f.seq = 0; // publish() assigns it
+            hub.publish(f);
+        }
+        hub
+    }
+
+    #[test]
+    fn ring_delivers_every_frame_in_order() {
+        // Exactly the burst the pump measured: an IDR and the P-frame behind it
+        // published inside one wake-up. The old single-slot Hub kept only the
+        // last of them, so the P-frame's reference chain broke.
+        let hub = hub_with(&[(true, 4000), (false, 300), (false, 280)]);
+        let mut seq = 0u64; // the session's startup cursor is `latest()`
+        let mut seen = Vec::new();
+        while let Some(f) = hub.next(seq, Duration::from_millis(50)) {
+            if f.seq == seq {
+                break;
+            }
+            seq = f.seq;
+            seen.push((f.seq, f.len(), f.keyframe));
+            if seq >= 2 {
+                break;
+            }
+        }
+        assert_eq!(
+            seen,
+            vec![(1, 300, false), (2, 280, false)],
+            "every AU after the cursor, in order, none lost"
+        );
+    }
+
+    #[test]
+    fn ring_is_bounded_and_forgets_oldest() {
+        let hub = Hub::new(test_info());
+        for i in 0..(RING_FRAMES * 2) {
+            let mut f = frame(i as u64, i % 10 == 0, 64);
+            f.seq = 0;
+            hub.publish(f);
+        }
+        let g = hub.inner.lock().unwrap();
+        assert!(g.frames.len() <= RING_FRAMES);
+        assert!(g.frame_bytes <= RING_BYTES + 64);
+        drop(g);
+        // Oldest surviving frame is well past 0.
+        let first = hub.next(0, Duration::from_millis(100)).expect("a frame");
+        assert!(first.seq > 0);
+    }
+
+    #[test]
+    fn lagging_reader_resyncs_on_a_keyframe() {
+        // Reader is at seq 0; the ring now holds 40..95 with a keyframe at 50.
+        let hub = Hub::new(test_info());
+        for i in 0..96u64 {
+            let mut f = frame(i, i % 10 == 0, 100);
+            f.seq = 0;
+            hub.publish(f);
+        }
+        let f = hub.next(0, Duration::from_millis(100)).expect("a frame");
+        assert!(f.keyframe, "must resume at a keyframe, not a P-frame");
+        assert_eq!(f.seq % 10, 0);
+    }
+
+    #[test]
+    fn ended_reports_stop_and_drains_what_is_left() {
+        let hub = hub_with(&[(true, 100), (false, 50), (false, 40)]);
+        hub.stop();
+        assert!(hub.ended());
+        // Frames published before the stop are still readable: a session that
+        // was at seq 0 drains 1 then 2, and only then gets its end.
+        let a = hub.next(0, Duration::from_millis(100)).expect("drained");
+        assert_eq!(a.seq, 1);
+        let b = hub.next(a.seq, Duration::from_millis(100)).expect("drained");
+        assert_eq!(b.seq, 2);
+        assert!(hub.next(b.seq, Duration::from_millis(10)).is_none());
+    }
+
+    #[test]
+    fn audio_ring_keeps_order_and_bounds() {
+        let hub = empty("vs0");
+        for i in 0..(AUDIO_RING + 10) {
+            let mut a = AudioFrame { data: vec![i as u8; 8], seq: 0, ts_ms: i as u64 * 128 };
+            a.seq = 0;
+            hub.publish_audio(a);
+        }
+        assert!(hub.inner.lock().unwrap().audio.len() <= AUDIO_RING);
+        let a = hub.next_audio(0, Duration::from_millis(100)).expect("audio");
+        let b = hub.next_audio(a.seq, Duration::from_millis(100)).expect("next audio");
+        assert_eq!(b.seq, a.seq + 1);
     }
 }
