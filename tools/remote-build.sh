@@ -26,8 +26,18 @@ timeout 10 ssh -o BatchMode=yes -o ConnectTimeout=8 build-01 true 2>/dev/null \
 remote="src/anyka-build/$(printf '%s' "$root/tools/rust/$crate" | sha256sum | cut -c1-16)/$crate"
 ssh -o BatchMode=yes build-01 "mkdir -p ~/$remote"
 
+# A crate may need the C libraries built by tools/tls/build.sh (camrtsp links
+# mbedTLS). They sit outside the crate, so they get their own trip, next to it,
+# and build.sh is told where with TLS_ROOT.
+builddir=$(dirname "$remote")
+tls_env=""
+if [ -d "$root/tools/tls/out" ]; then
+    ssh -o BatchMode=yes build-01 "mkdir -p ~/$builddir/tls-out"
+    rsync -a --delete "$root/tools/tls/out/" "build-01:$builddir/tls-out/"
+    tls_env="TLS_ROOT=\$HOME/$builddir/tls-out"
+fi
 rsync -a --delete --exclude target \
     "$root/tools/rust/$crate/" "build-01:$remote/"
 # shellcheck disable=SC2068
-ssh -o BatchMode=yes build-01 "cd ~/$remote && $* ./build.sh"
+ssh -o BatchMode=yes build-01 "cd ~/$remote && $tls_env $* ./build.sh"
 rsync -a "build-01:$remote/target/" "$root/tools/rust/$crate/target/"

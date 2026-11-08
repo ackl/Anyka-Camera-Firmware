@@ -45,3 +45,10 @@
 .DS_Store
 __pycache__/
 *.pyc
+
+# TLS build (tools/tls): the mbedTLS tarball, its extracted tree and the built
+# archives are all reproducible from tools/tls/build.sh (pinned sha256).
+/tools/tls/*.tar.gz
+/tools/tls/build/
+/tools/tls/out/
+/tools/zig-linux/
